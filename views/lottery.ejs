@@ -40,8 +40,8 @@
       <div class="col-md-12">
               <div class="card">
                 <div class="card-header card-header-primary">
-                  <h4 class="card-title ">Questions</h4>
-                  <p class="card-category"> </p>
+                  <h4 class="card-title ">Lottery Items</h4>
+                  <p class="card-category">Manage Items that can be returned in lottey service.</p>
                 </div>
                 <div class="card-body">
                   <div class="table-responsive">
@@ -71,6 +71,11 @@
                               <a href="<%= "delete_lottery?id="+ LotteryItem[i].LotteryItemID %>" >
                                 <i class="material-icons">delete</i>
                               </a>
+
+                              <a href="<%= "edit_lottery?id="+ LotteryItem[i].LotteryItemID %>" >
+                                <i class="material-icons" hidden>edit</i>
+                              </a>
+
                             </td>
                           </tr>
 

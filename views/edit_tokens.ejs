@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-icon.png">
   <link rel="icon" type="image/png" href="/img/favicon.png">
   <title>
-     QuizGame: Questions
+     QuizGame: Ad Tokens
   </title>
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
   <!--     Fonts and icons     -->
@@ -33,16 +33,23 @@
              <div class="col-md-12">
                <div class="card">
                  <div class="card-header card-header-primary">
-                   <h4 class="card-title">New Lottery Item</h4>
+                   <h4 class="card-title">Edit Ad Token</h4>
                    <p class="card-category"></p>
                  </div>
                  <div class="card-body">
-                   <form action="/commit_lottery" method="POST">
+                   <form action="/update_token" method="POST">
                      <div class="row">
-                       <div class="col-md-12">
+                       <div class="col-md-6">
                          <div class="form-group">
                            <label class="bmd-label-floating">Title</label>
                            <input name="title" type="text" class="form-control">
+                         </div>
+                       </div>
+
+                       <div class="col-md-6">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Value</label>
+                           <input name="value" type="text" class="form-control" value="<%= Token.Value %>">
                          </div>
                        </div>
                      </div>
@@ -50,30 +57,15 @@
                      <div class="row">
                        <div class="col-md-4">
                          <div class="form-group">
-                           <label class="bmd-label-floating">Type</label>
+                           <label class="bmd-label-floating">Network</label>
                            <select name="type" class="form-control">
-                             <option value="freeScore">Free Score</option>
-                             <option value="freeGame">Free Game</option>
+                             <option value="Admob">Admob</option>
+                             <option value="UnityAds">UnityAds</option>
                            </select>
                          </div>
                        </div>
 
-
                        </div>
-
-                       <div class="row">
-
-                         <div class="col-md-4">
-                           <div class="form-group">
-                             <label class="bmd-label-floating">Amount</label>
-                             <input type="text" name="amount"  class="form-control">
-
-                           </div>
-                         </div>
-
-
-
-                     </div>
 
 
                      <button type="submit" class="btn btn-primary pull-right">Insert Lottery Item</button>

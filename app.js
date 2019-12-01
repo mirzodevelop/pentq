@@ -89,10 +89,17 @@ app.post('/commit_question', function(req, res) {
           });
         });
       });
-
-
     });
 })
+
+app.post('/commit_lottery', function(req, res) {
+  Insertor.insert_one('LotteryItem', ['Title','Type','Amount'],
+    [req.body.title,req.body.type,req.body.amount],
+    function(insert_result) {
+      res.redirect("lottery");
+    });
+})
+
 
 app.get('/questions', function(req, res) {
   Selector.select_all("Question", function(select_result) {
@@ -104,6 +111,11 @@ app.get('/questions', function(req, res) {
   });
 })
 
+app.get('/new_lottery', function(req, res) {
+  res.render("new_lottery.ejs");
+})
+
+
 app.get('/lottery', function(req, res) {
   Selector.select_all("LotteryItem", function(select_result) {
     var data = {
@@ -111,6 +123,33 @@ app.get('/lottery', function(req, res) {
     };
     console.log(data);
     res.render("lottery.ejs", data);
+  });
+})
+
+app.get('/delete_lottery', function(req, res) {
+  Deleter.delete_where('LotteryItem', "LotteryItemID='" + req.query.id + "'", function(insert_result) {
+    res.redirect("lottery");
+  });
+
+})
+
+app.get('/tokens', function(req, res) {
+  Selector.select_all("ADSToken", function(select_result) {
+    var data = {
+      "Tokens": select_result
+    };
+    console.log(data);
+    res.render("tokens.ejs", data);
+  });
+})
+
+app.get('/edit_token', function(req, res) {
+  Selector.select_all_where("ADSToken","ADSTokenID="+req.query.id, function(select_result) {
+    var data = {
+      "Token": select_result[0]
+    };
+    console.log(data);
+    res.render("edit_tokens.ejs", data);
   });
 })
 

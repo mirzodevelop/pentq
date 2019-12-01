@@ -5,8 +5,9 @@
   <meta charset="utf-8" />
   <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-icon.png">
   <link rel="icon" type="image/png" href="/img/favicon.png">
+
   <title>
-     QuizGame: Questions
+     QuizGame: Ad Tokens
   </title>
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
   <!--     Fonts and icons     -->
@@ -21,71 +22,86 @@
 <body class="">
   <div class="wrapper ">
     <div class="sidebar" data-color="purple" data-background-color="white" data-image="/img/sidebar-1.jpg">
+      <!--
+        Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
+
+        Tip 2: you can also add an image using data-image tag
+    -->
       <div class="logo">
         <a  class="simple-text logo-normal">
           QuizGame
         </a>
       </div>
       <%- include("sidebar.ejs") %>
+
     </div>
     <div class="main-panel">
 
-             <div class="col-md-12">
-               <div class="card">
-                 <div class="card-header card-header-primary">
-                   <h4 class="card-title">New Lottery Item</h4>
-                   <p class="card-category"></p>
-                 </div>
-                 <div class="card-body">
-                   <form action="/commit_lottery" method="POST">
-                     <div class="row">
-                       <div class="col-md-12">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">Title</label>
-                           <input name="title" type="text" class="form-control">
-                         </div>
-                       </div>
-                     </div>
+      <div class="col-md-12">
+              <div class="card">
+                <div class="card-header card-header-primary">
+                  <h4 class="card-title ">All tokens</h4>
+                  <p class="card-category">Manage Tokens of varoius ad networks.</p>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead class=" text-primary">
+                        <th>
+                          ID
+                        </th>
+                        <th>
+                          Network
+                        </th>
+                        <th>
+                          Title
+                        </th>
+                        <th>
+                          Values
+                        </th>
+                        <th>
+                          Options
+                        </th>
+                      </thead>
+                      <tbody>
 
-                     <div class="row">
-                       <div class="col-md-4">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">Type</label>
-                           <select name="type" class="form-control">
-                             <option value="freeScore">Free Score</option>
-                             <option value="freeGame">Free Game</option>
-                           </select>
-                         </div>
-                       </div>
+                        <% for (var i =0; i <Tokens.length;  i++ ) { %>
+                          <tr>
+                            <td>
+                              <%= Tokens[i].ADSTokenID %>
+                            </td>
+                            <td>
+                              <%= Tokens[i].Network %>
+                            </td>
+                            <td>
+                              <%= Tokens[i].Title %>
+                            </td>
+                            <td>
+                              <%= Tokens[i].Value %>
+                            </td>
+                            <td>
+                              <a href="<%= "delete_token?id="+ Tokens[i].ADSTokenID %>" >
+                                <i class="material-icons" hidden>delete</i>
+                              </a>
+
+                              <a href="<%= "edit_token?id="+ Tokens[i].ADSTokenID %>" >
+                                <i class="material-icons">edit</i>
+                              </a>
+
+                            </td>
+                          </tr>
+
+                        <% } %>
 
 
-                       </div>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                       <div class="row">
-
-                         <div class="col-md-4">
-                           <div class="form-group">
-                             <label class="bmd-label-floating">Amount</label>
-                             <input type="text" name="amount"  class="form-control">
-
-                           </div>
-                         </div>
-
-
-
-                     </div>
-
-
-                     <button type="submit" class="btn btn-primary pull-right">Insert Lottery Item</button>
-                     <div class="clearfix"></div>
-                   </form>
-                 </div>
-               </div>
-             </div>
-
-</div>
-
-
+    </div>
   </div>
 
   <!--   Core JS Files   -->
