@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-icon.png">
   <link rel="icon" type="image/png" href="/img/favicon.png">
+
   <title>
      QuizGame: Questions
   </title>
@@ -21,134 +22,69 @@
 <body class="">
   <div class="wrapper ">
     <div class="sidebar" data-color="purple" data-background-color="white" data-image="/img/sidebar-1.jpg">
+      <!--
+        Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
+
+        Tip 2: you can also add an image using data-image tag
+    -->
       <div class="logo">
         <a  class="simple-text logo-normal">
           QuizGame
         </a>
       </div>
       <%- include("sidebar.ejs") %>
+
     </div>
     <div class="main-panel">
 
-             <div class="col-md-12">
-               <div class="card">
-                 <div class="card-header card-header-primary">
-                   <h4 class="card-title">New Question</h4>
-                   <p class="card-category"></p>
-                 </div>
-                 <div class="card-body">
-                   <form action="/commit_question" method="POST">
-                     <div class="row">
-                       <div class="col-md-12">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">Statement</label>
-                           <input name="statement" type="text" class="form-control">
-                         </div>
-                       </div>
-                     </div>
+      <div class="col-md-12">
+              <div class="card">
+                <div class="card-header card-header-primary">
+                  <h4 class="card-title ">Questions</h4>
+                  <p class="card-category"> </p>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead class=" text-primary">
+                        <th>
+                          ID
+                        </th>
+                        <th>
+                          Title
+                        </th>
+                        <th>
+                          Options
+                        </th>
+                      </thead>
+                      <tbody>
 
-                     <div class="row">
-                       <div class="col-md-3">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">choice #1</label>
-                           <input name="c1" type="text" class="form-control">
-                         </div>
-                       </div>
+                        <% for (var i =0; i <LotteryItem.length;  i++ ) { %>
+                          <tr>
+                            <td>
+                              <%= LotteryItem[i].LotteryItemID %>
+                            </td>
+                            <td>
+                              <%= LotteryItem[i].Title %>
+                            </td>
+                            <td>
+                              <a href="<%= "delete_lottery?id="+ LotteryItem[i].LotteryItemID %>" >
+                                <i class="material-icons">delete</i>
+                              </a>
+                            </td>
+                          </tr>
 
-                       <div class="col-md-3">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">choice #2</label>
-                           <input name="c2" type="text" class="form-control">
-                         </div>
-                       </div>
-
-                       <div class="col-md-3">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">choice #3</label>
-                           <input name="c3" type="text" class="form-control">
-                         </div>
-                       </div>
-
-                       <div class="col-md-3">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">choice #4</label>
-                           <input name="c4" type="text" class="form-control">
-                         </div>
-                       </div>
-                     </div>
-
-                     <div class="row">
-                       <div class="col-md-4">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">Answer</label>
-                           <select name="answer" class="form-control">
-                             <option value="1">1</option>
-                             <option value="2">2</option>
-                             <option value="3">3</option>
-                             <option value="4">4</option>
-                           </select>
-                         </div>
-                       </div>
-
-                       <div class="col-md-4">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">Saftey Level</label>
-                           <select name="saftey"  class="form-control">
-                             <option value="Yes">YES</option>
-                             <option value="No">NO</option>
-                           </select>
-                         </div>
-                       </div>
-
-                       <div class="col-md-4">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">ContestID</label>
-                           <select name="contest" class="form-control">
-                             <option value="1">1</option>
-                             <option value="2">2</option>
-                           </select>
-                         </div>
-                       </div>
-
-                     </div>
-
-                     <div class="row">
-                       <div class="col-md-4">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">Order</label>
-                           <input name="order" type="text" class="form-control">
-
-                         </div>
-                       </div>
-
-                       <div class="col-md-4">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">Answer Time</label>
-                           <input name="time" type="text" class="form-control">
-
-                         </div>
-                       </div>
-
-                       <div class="col-md-4">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">Prize</label>
-                           <input name="prize" type="text" class="form-control">
-
-                         </div>
-                       </div>
-
-                     </div>
-
-                     <button type="submit" class="btn btn-primary pull-right">Insert Question</button>
-                     <div class="clearfix"></div>
-                   </form>
-                 </div>
-               </div>
-             </div>
-
-</div>
+                        <% } %>
 
 
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+    </div>
   </div>
 
   <!--   Core JS Files   -->

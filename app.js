@@ -35,65 +35,91 @@ app.use(bodyParser.json())
 app.use('/static', express.static(path.join(__dirname, 'public')))
 
 app.use(session({
-    key: 'kloche',
-    secret: '1z5xdfgjkl5nbgmht',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        expires: 600000
-    }
+  key: 'kloche',
+  secret: '1z5xdfgjkl5nbgmht',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    expires: 600000
+  }
 }));
 
 app.use(cookieParser());
 
 app.get('/', function(req, res) {
-    console.log(req.session.user);
-    if (typeof req.session.user == 'undefined')
-    {
-      res.redirect("/login");
-    }
-    res.render("main.ejs");
+  console.log(req.session.user);
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  res.render("main.ejs");
 })
 
 app.get('/login', function(req, res) {
-    res.render("login.ejs");
+  res.render("login.ejs");
 })
 
 app.get('/new_question', function(req, res) {
-    res.render("new_question.ejs");
+  res.render("new_question.ejs");
 })
 
 app.get('/delete_question', function(req, res) {
-    Deleter.delete_where('Question', "QuestionID='"+req.query.id+"'", function(insert_result) {
-      res.redirect("questions");
-    });
+  Deleter.delete_where('Question', "QuestionID='" + req.query.id + "'", function(insert_result) {
+    res.redirect("questions");
+  });
 
 })
 
 app.post('/commit_question', function(req, res) {
-  Insertor.insert_one('Question', ['QuestionStatement','OrderNum','QuestionType','ContestID'],
-   [req.body.statement,0,'MultipleChoice',1], function(insert_result) {
-    res.redirect("questions");
-  });
+  Insertor.insert_one('Question', ['QuestionStatement', 'OrderNum', 'QuestionType', 'ContestID', 'Prize', 'AnswerTime', 'IsSaftyLevel'],
+    [req.body.statement, req.body.order, 'MultipleChoice', req.body.contest, req.body.prize, req.body.time, req.body.saftey],
+    function(insert_result) {
+      console.log(insert_result.insertId);
+      var qunum = insert_result.insertId;
+      var istrue = 'No';
+
+      Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, req.body.c1, (req.body.answer == 1) ? "Yes" : "No"], function(res_) {
+
+        Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, req.body.c2, (req.body.answer == 2) ? "Yes" : "No"], function(res_) {
+
+          Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, req.body.c3, (req.body.answer == 3) ? "Yes" : "No"], function(res_) {
+
+            Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, req.body.c4, (req.body.answer == 4) ? "Yes" : "No"], function(res_) {
+              res.redirect("questions");
+            });
+          });
+        });
+      });
+
+
+    });
 })
 
 app.get('/questions', function(req, res) {
-  Selector.select_all("Question",function(select_result){
-    var data={"Questions":select_result};
+  Selector.select_all("Question", function(select_result) {
+    var data = {
+      "Questions": select_result
+    };
     console.log(data);
-    res.render("questions.ejs",data);
+    res.render("questions.ejs", data);
   });
 })
 
+app.get('/lottery', function(req, res) {
+  Selector.select_all("LotteryItem", function(select_result) {
+    var data = {
+      "LotteryItem": select_result
+    };
+    console.log(data);
+    res.render("lottery.ejs", data);
+  });
+})
 
 app.post('/checkuser', function(req, res) {
-  Selector.select_all_where('Admin', "UserName='" + req.body.uname +"' AND PassHash='"+md5(req.body.passwd)+"'", function(select_result){
-    if(select_result.length==1)
-    {
-      req.session.user=select_result[0];
+  Selector.select_all_where('Admin', "UserName='" + req.body.uname + "' AND PassHash='" + md5(req.body.passwd) + "'", function(select_result) {
+    if (select_result.length == 1) {
+      req.session.user = select_result[0];
       res.redirect("/");
-    }
-    else {
+    } else {
       res.redirect("login");
     }
   });
