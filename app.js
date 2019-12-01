@@ -66,6 +66,14 @@ app.get('/new_question', function(req, res) {
   res.render("new_question.ejs");
 })
 
+app.get('/new_video', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  res.render("new_video.ejs");
+})
+
+
 app.get('/delete_question', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
@@ -73,7 +81,15 @@ app.get('/delete_question', function(req, res) {
   Deleter.delete_where('Question', "QuestionID='" + req.query.id + "'", function(insert_result) {
     res.redirect("questions");
   });
+})
 
+app.get('/delete_package', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Deleter.delete_where('Package', "PackageID='" + req.query.id + "'", function(insert_result) {
+    res.redirect("shop");
+  });
 })
 
 app.post('/commit_question', function(req, res) {
@@ -113,6 +129,36 @@ app.post('/commit_lottery', function(req, res) {
     });
 })
 
+app.post('/commit_video', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  var busboy = new Busboy({ headers: req.headers });
+      busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
+
+        var saveTo = path.join(__dirname, 'uploads/' + filename);
+        file.pipe(fs.createWriteStream(saveTo));
+      });
+
+      busboy.on('finish', function() {
+        res.writeHead(200, { 'Connection': 'close' });
+        res.end("That's all folks!");
+      });
+
+      return req.pipe(busboy);
+})
+
+app.post('/commit_package', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Insertor.insert_one('Package', ['Title','Price','Quantity'],
+    [req.body.title,req.body.price,req.body.quantity],
+    function(insert_result) {
+      res.redirect("shop");
+    });
+})
+
 
 app.get('/questions', function(req, res) {
   if (typeof req.session.user == 'undefined') {
@@ -132,6 +178,13 @@ app.get('/new_lottery', function(req, res) {
     res.redirect("/login");
   }
   res.render("new_lottery.ejs");
+})
+
+app.get('/new_package', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  res.render("new_package.ejs");
 })
 
 app.get('/users', function(req, res) {
