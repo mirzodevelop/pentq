@@ -14,6 +14,7 @@ var md5 = require('md5');
 var Deleter = require("./Deleter.js");
 var Selector = require("./Selector.js");
 var Insertor = require("./Insertor.js");
+var Updater = require("./Updater.js");
 
 var Iconv = require('iconv').Iconv;
 var iconv = new Iconv('UTF-8', 'ISO-8859-1');
@@ -59,10 +60,16 @@ app.get('/login', function(req, res) {
 })
 
 app.get('/new_question', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
   res.render("new_question.ejs");
 })
 
 app.get('/delete_question', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
   Deleter.delete_where('Question', "QuestionID='" + req.query.id + "'", function(insert_result) {
     res.redirect("questions");
   });
@@ -70,6 +77,9 @@ app.get('/delete_question', function(req, res) {
 })
 
 app.post('/commit_question', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
   Insertor.insert_one('Question', ['QuestionStatement', 'OrderNum', 'QuestionType', 'ContestID', 'Prize', 'AnswerTime', 'IsSaftyLevel'],
     [req.body.statement, req.body.order, 'MultipleChoice', req.body.contest, req.body.prize, req.body.time, req.body.saftey],
     function(insert_result) {
@@ -93,6 +103,9 @@ app.post('/commit_question', function(req, res) {
 })
 
 app.post('/commit_lottery', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
   Insertor.insert_one('LotteryItem', ['Title','Type','Amount'],
     [req.body.title,req.body.type,req.body.amount],
     function(insert_result) {
@@ -102,6 +115,9 @@ app.post('/commit_lottery', function(req, res) {
 
 
 app.get('/questions', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
   Selector.select_all("Question", function(select_result) {
     var data = {
       "Questions": select_result
@@ -112,11 +128,29 @@ app.get('/questions', function(req, res) {
 })
 
 app.get('/new_lottery', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
   res.render("new_lottery.ejs");
 })
 
+app.get('/users', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Selector.select_all("User", function(select_result) {
+    var data = {
+      "Users": select_result
+    };
+    console.log(data);
+    res.render("users.ejs", data);
+  });
+})
 
 app.get('/lottery', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
   Selector.select_all("LotteryItem", function(select_result) {
     var data = {
       "LotteryItem": select_result
@@ -126,7 +160,25 @@ app.get('/lottery', function(req, res) {
   });
 })
 
+
+app.get('/shop', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Selector.select_all("Package", function(select_result) {
+    var data = {
+      "Packages": select_result
+    };
+    console.log(data);
+    res.render("shop.ejs", data);
+  });
+})
+
+
 app.get('/delete_lottery', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
   Deleter.delete_where('LotteryItem', "LotteryItemID='" + req.query.id + "'", function(insert_result) {
     res.redirect("lottery");
   });
@@ -134,6 +186,9 @@ app.get('/delete_lottery', function(req, res) {
 })
 
 app.get('/tokens', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
   Selector.select_all("ADSToken", function(select_result) {
     var data = {
       "Tokens": select_result
@@ -144,6 +199,9 @@ app.get('/tokens', function(req, res) {
 })
 
 app.get('/edit_token', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
   Selector.select_all_where("ADSToken","ADSTokenID="+req.query.id, function(select_result) {
     var data = {
       "Token": select_result[0]
@@ -152,6 +210,41 @@ app.get('/edit_token', function(req, res) {
     res.render("edit_tokens.ejs", data);
   });
 })
+
+
+app.get('/edit_package', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Selector.select_all_where("Package","packageID="+req.query.id, function(select_result) {
+    var data = {
+      "Package": select_result[0]
+    };
+    console.log(data);
+    res.render("edit_package.ejs", data);
+  });
+})
+
+app.post('/update_package', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Updater.update_where("Package",
+  ['Title',"Quantity","Price"],[req.body.title,req.body.quantity,req.body.price],"PackageID="+req.body.id, function(select_result) {
+    res.redirect("shop");
+  });
+})
+
+app.post('/update_token', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Updater.update_where("ADSToken",
+  ['Title',"Value"],[req.body.title,req.body.value],"ADSTokenID="+req.body.id, function(select_result) {
+    res.redirect("tokens");
+  });
+})
+
 
 app.post('/checkuser', function(req, res) {
   Selector.select_all_where('Admin', "UserName='" + req.body.uname + "' AND PassHash='" + md5(req.body.passwd) + "'", function(select_result) {
