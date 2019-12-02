@@ -10,6 +10,7 @@ var session = require('express-session');
 var formidable = require('formidable');
 var mysql = require('mysql');
 var md5 = require('md5');
+var fileUpload=require('express-fileupload');
 
 var Deleter = require("./Deleter.js");
 var Selector = require("./Selector.js");
@@ -27,6 +28,11 @@ const port = 8888;
 
 app.set('views', __dirname + '/views');
 app.use(express.static(__dirname + '/public'));
+
+app.use(fileUpload({
+  limits: { fileSize: 50 * 1024 * 1024 },
+  tempFileDir : '/usr/games/panel0/public/'
+}));
 
 app.use(bodyParser.urlencoded({
   extended: false
@@ -133,19 +139,7 @@ app.post('/commit_video', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
   }
-  var busboy = new Busboy({ headers: req.headers });
-      busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
-
-        var saveTo = path.join(__dirname, 'uploads/' + filename);
-        file.pipe(fs.createWriteStream(saveTo));
-      });
-
-      busboy.on('finish', function() {
-        res.writeHead(200, { 'Connection': 'close' });
-        res.end("That's all folks!");
-      });
-
-      return req.pipe(busboy);
+  console.log(req.files);
 })
 
 app.post('/commit_package', function(req, res) {
