@@ -234,6 +234,27 @@ def get_admob_tokens():
 
     return ret
 
+@app.route('/api/get_options')
+def get_options():
+        ret=""""""
+        try:
+            mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+            mycursor = mydb.cursor()
+            mycursor.execute("SELECT * FROM OptionParameter;")
+            myresult = mycursor.fetchall()
+
+            row_headers=[camelize(x[0]) for x in mycursor.description] #this will extract row headers
+            json_data=[]
+            for result in myresult:
+                json_data.append(dict(zip(row_headers,result)))
+            response = app.response_class(response=json.dumps({"result":"OK","array":json_data,"item":None}),status=200,mimetype='application/json')
+            return response
+        except Exception as e:
+            response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
+            return response
+
+        return ret
+
 @app.route('/api/skip', methods=['POST'])
 def skip():
     ret=""""""

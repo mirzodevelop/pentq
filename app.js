@@ -30,8 +30,10 @@ app.set('views', __dirname + '/views');
 app.use(express.static(__dirname + '/public'));
 
 app.use(fileUpload({
+  useTempFiles : true,
   limits: { fileSize: 50 * 1024 * 1024 },
-  tempFileDir : '/usr/games/panel0/public/'
+  tempFileDir : '/usr/games/panel0/public/videos/',
+  preserveExtension:true
 }));
 
 app.use(bodyParser.urlencoded({
@@ -140,6 +142,15 @@ app.post('/commit_video', function(req, res) {
     res.redirect("/login");
   }
   console.log(req.files);
+  fs.rename(req.files.video.tempFilePath, req.files.video.tempFilePath+'.'+req.files.video.name.split(".")[1], function(err) {
+    if ( err ) console.log('ERROR: ' + err);
+
+    Insertor.insert_one('Video', ['Title','Address'],
+      [req.body.title,req.files.video.tempFilePath+'.'+req.files.video.name.split(".")[1]],
+      function(insert_result) {
+        res.redirect("/");
+      });
+  });
 })
 
 app.post('/commit_package', function(req, res) {
@@ -245,6 +256,32 @@ app.get('/tokens', function(req, res) {
   });
 })
 
+app.get('/options', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Selector.select_all("OptionParameter", function(select_result) {
+    var data = {
+      "Options": select_result
+    };
+    console.log(data);
+    res.render("options.ejs", data);
+  });
+})
+
+app.get('/requests', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Selector.select_all("MoneyRequest", function(select_result) {
+    var data = {
+      "Requests": select_result
+    };
+    console.log(data);
+    res.render("requests.ejs", data);
+  });
+})
+
 app.get('/edit_token', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
@@ -257,6 +294,21 @@ app.get('/edit_token', function(req, res) {
     res.render("edit_tokens.ejs", data);
   });
 })
+
+
+app.get('/edit_option', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Selector.select_all_where("OptionParameter","OptionParameterID="+req.query.id, function(select_result) {
+    var data = {
+      "Option": select_result[0]
+    };
+    console.log(data);
+    res.render("edit_options.ejs", data);
+  });
+})
+
 
 
 app.get('/edit_package', function(req, res) {
@@ -282,6 +334,16 @@ app.post('/update_package', function(req, res) {
   });
 })
 
+app.get('/paid', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Updater.update_where("MoneyRequest",
+  ['Estate'],["Paid"],"MoneyRequestID="+req.query.id, function(select_result) {
+    res.redirect("requests");
+  });
+})
+
 app.post('/update_token', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
@@ -292,6 +354,15 @@ app.post('/update_token', function(req, res) {
   });
 })
 
+app.post('/update_option', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Updater.update_where("OptionParameter",
+  ['Title',"Value","Tag"],[req.body.title,req.body.value,req.body.tag],"OptionParameterID="+req.body.id, function(select_result) {
+    res.redirect("options");
+  });
+})
 
 app.post('/checkuser', function(req, res) {
   Selector.select_all_where('Admin', "UserName='" + req.body.uname + "' AND PassHash='" + md5(req.body.passwd) + "'", function(select_result) {
