@@ -5,6 +5,7 @@ import json
 import hashlib
 import string
 import random
+from random import shuffle
 
 app = Flask(__name__)
 
@@ -73,7 +74,7 @@ def userinfo():
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT U.DisplayName,U.Score,U.WeeklyScore,U.AllowedPackageCount,U.UserName,U.PhoneNumber,U.Rank,U.WeeklyRank FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
+        mycursor.execute("SELECT U.DisplayName,U.Score,U.WeeklyScore,U.ReferralCode,U.AllowedPackageCount,U.UserName,U.PhoneNumber,U.Rank,U.WeeklyRank,U.Balance FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
         myresult = mycursor.fetchall()
         row_headers=[camelize(x[0]) for x in mycursor.description] #this will extract row headers
         json_data=[]
@@ -104,6 +105,37 @@ def lottery():
 
     except Exception as e:
         print(str(e))
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
+        return response
+
+@app.route('/api/money_request', methods=['POST'])
+def money_request():
+    data = request.get_json()
+    print(data)
+
+    try:
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT U.Balance FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
+        myresult = mycursor.fetchall()
+        print(myresult[0][0])
+        if(int(myresult[0][0])<int(request.form.get('Amount'))):
+            response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"Account balance is not enough."}),status=200,mimetype='application/json')
+            return response
+    except Exception as e:
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"Expired."}),status=200,mimetype='application/json')
+        return response
+
+    try:
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+        mycursor = mydb.cursor()
+        sql = "INSERT INTO MoneyRequest (Estate,BankAccount,AccountName,Amount) VALUES (%s, %s, %s, %s)"
+        val = ("New",request.form.get('AccountNumber'),request.form.get('AccountName').encode("utf8"),request.form.get('Amount'))
+        mycursor.execute(sql, val)
+        mydb.commit()
+        response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":None}),status=200,mimetype='application/json')
+        return response
+    except Exception as e:
         response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
         return response
 
@@ -197,13 +229,12 @@ def register_new_user():
     except Exception as e:
         response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
         return response
-
-
     try:
+        rcode=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank) VALUES (%s, %s, %s, %s, %s, %s,%s,%s,%s)"
-        val = (data["UserName"], "0","0",data["Password"],data["DisplayName"],"3",data["PhoneNumber"],"1","1")
+        sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance) VALUES (%s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s)"
+        val = (data["UserName"], "0","0",data["Password"],data["DisplayName"],"3",data["PhoneNumber"],"1","1",rcode,"0")
         mycursor.execute(sql, val)
         mydb.commit()
 
@@ -261,6 +292,16 @@ def skip():
     response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":None}),status=200,mimetype='application/json')
     return response
 
+@app.route('/api/others_answers', methods=['POST'])
+def others_answers():
+    ret=""""""
+    a=random.randint(3, 35)
+    b=random.randint(3, 35)
+    c=random.randint(3, 35)
+    d=100-a-b-c
+    response = app.response_class(response=json.dumps({"result":"OK","array":shuffle([a,b,c,d]),"item":None}),status=200,mimetype='application/json')
+    return response
+
 
 @app.route('/api/withdraw',methods=['POST'])
 def withdraw():
@@ -289,13 +330,38 @@ def withdraw():
         response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"Expired."}),status=200,mimetype='application/json')
         return response
 
+@app.route('/api/reward_for_video',methods=['POST'])
+def reward_for_video():
+    data = request.get_json()
+    try:
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT U.UserID FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
+        myresult = mycursor.fetchall()
+        print(myresult[0][0])
+
+        sql = "UPDATE User Set Score= Score + %s WHERE UserID=%s;"
+        val = ("30",str(myresult[0][0]))
+        mycursor.execute(sql, val)
+        mydb.commit()
+
+        json_data=[]
+        response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":None}),status=200,mimetype='application/json')
+        return response
+
+    except Exception as e:
+        print(str(e))
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"Expired."}),status=200,mimetype='application/json')
+        return response
+
+
 @app.route('/api/get_all_lotteries')
 def get_all_lotteries():
     ret=""""""
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT * FROM LotteryItem WHERE Estate='active';")
+        mycursor.execute("SELECT * FROM LotteryItem;")
         myresult = mycursor.fetchall()
 
         row_headers=[camelize(x[0]) for x in mycursor.description] #this will extract row headers
