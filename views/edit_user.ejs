@@ -5,9 +5,8 @@
   <meta charset="utf-8" />
   <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-icon.png">
   <link rel="icon" type="image/png" href="/img/favicon.png">
-
   <title>
-     QuizGame: All Users
+     QuizGame: Edit User
   </title>
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
   <!--     Fonts and icons     -->
@@ -28,89 +27,82 @@
         </a>
       </div>
       <%- include("sidebar.ejs") %>
-
     </div>
     <div class="main-panel">
 
-      <div class="col-md-12">
-              <div class="card">
-                <div class="card-header card-header-primary">
-                  <h4 class="card-title ">All Users</h4>
-                  <p class="card-category"></p>
-                </div>
-                <div class="card-body">
-                  <div class="table-responsive">
-                    <table class="table">
-                      <thead class=" text-primary">
-                        <th>
-                          ID
-                        </th>
-                        <th>
-                          UserName
-                        </th>
-                        <th>
-                          Display Name
-                        </th>
-                        <th>
-                          Score
-                        </th>
-                        <th>
-                          Weekly Score
-                        </th>
-                        <th>
-                          Balance
-                        </th>
-                        <th>
-                          Options
-                        </th>
+             <div class="col-md-12">
+               <div class="card">
+                 <div class="card-header card-header-primary">
+                   <h4 class="card-title">Edit User</h4>
+                   <p class="card-category"></p>
+                 </div>
+                 <div class="card-body">
+                   <form action="/update_user" method="POST">
+                     <div class="row">
+                       <div class="col-md-6">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">UserName</label>
+                           <input name="id" type="text" class="form-control" value="<%= User.UserID %>" hidden>
 
-                      </thead>
-                      <tbody>
+                           <input name="uname" type="text" class="form-control" value="<%= User.UserName %>" readonly>
+                         </div>
+                       </div>
 
-                        <% for (var i =0; i <Users.length;  i++ ) { %>
-                          <tr>
-                            <td>
-                              <%= Users[i].UserID %>
-                            </td>
-                            <td>
-                              <%= Users[i].UserName %>
-                            </td>
-                            <td>
-                              <%= Users[i].DisplayName %>
-                            </td>
-                            <td>
-                              <%= Users[i].Score %>
-                            </td>
-                            <td>
-                              <%= Users[i].WeeklyScore %>
-                            </td>
-                            <td>
-                              <%= Users[i].Balance %>
-                            </td>
-                            <td>
-                              <a href="<%= "delete_user?id="+ Users[i].UserID %>" >
-                                <i class="material-icons">delete</i>
-                              </a>
+                       <div class="col-md-6">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Display Name</label>
+                           <input name="dname" type="text" class="form-control" value="<%= User.DisplayName %>">
+                         </div>
+                       </div>
+                     </div>
 
-                              <a href="<%= "edit_user?id="+ Users[i].UserID %>" >
-                                <i class="material-icons">edit</i>
-                              </a>
+                     <div class="row">
+                       <div class="col-md-6">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Phone Number</label>
 
-                            </td>
+                           <input name="phone" type="text" class="form-control" value="<%= User.PhoneNumber %>">
+                         </div>
+                       </div>
 
-                          </tr>
+                       <div class="col-md-6">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Balance</label>
+                           <input name="balance" type="text" class="form-control" value="<%= User.Balance %>">
+                         </div>
+                       </div>
+                     </div>
 
-                        <% } %>
+                     <div class="row">
+                       <div class="col-md-6">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Score</label>
+
+                           <input name="score" type="text" class="form-control" value="<%= User.Score %>" readonly>
+                         </div>
+                       </div>
+
+                       <div class="col-md-6">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Weekly Score</label>
+                           <input name="weekly" type="text" class="form-control" value="<%= User.WeeklyScore %>" readonly>
+                         </div>
+                       </div>
+                     </div>
 
 
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-    </div>
+
+                     <button type="submit" class="btn btn-primary pull-right">Update User</button>
+                     <div class="clearfix"></div>
+                   </form>
+                 </div>
+               </div>
+             </div>
+
+</div>
+
+
   </div>
 
   <!--   Core JS Files   -->

@@ -5,9 +5,8 @@
   <meta charset="utf-8" />
   <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-icon.png">
   <link rel="icon" type="image/png" href="/img/favicon.png">
-
   <title>
-     QuizGame: All Users
+     QuizGame: Edit
   </title>
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
   <!--     Fonts and icons     -->
@@ -28,89 +27,133 @@
         </a>
       </div>
       <%- include("sidebar.ejs") %>
-
     </div>
     <div class="main-panel">
 
-      <div class="col-md-12">
-              <div class="card">
-                <div class="card-header card-header-primary">
-                  <h4 class="card-title ">All Users</h4>
-                  <p class="card-category"></p>
-                </div>
-                <div class="card-body">
-                  <div class="table-responsive">
-                    <table class="table">
-                      <thead class=" text-primary">
-                        <th>
-                          ID
-                        </th>
-                        <th>
-                          UserName
-                        </th>
-                        <th>
-                          Display Name
-                        </th>
-                        <th>
-                          Score
-                        </th>
-                        <th>
-                          Weekly Score
-                        </th>
-                        <th>
-                          Balance
-                        </th>
-                        <th>
-                          Options
-                        </th>
+             <div class="col-md-12">
+               <div class="card">
+                 <div class="card-header card-header-primary">
+                   <h4 class="card-title">Edit Question</h4>
+                   <p class="card-category"></p>
+                 </div>
+                 <div class="card-body">
+                   <form action="/update_question" method="POST">
+                     <div class="row">
+                       <div class="col-md-12">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Statement</label>
+                           <input name="id" type="text" class="form-control" value="<%= Question.QuestionID %>" hidden>
+                           <input name="statement" type="text" class="form-control" value="<%= Question.QuestionStatement %>" >
+                         </div>
+                       </div>
+                     </div>
 
-                      </thead>
-                      <tbody>
+                     <div class="row">
+                       <div class="col-md-3">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">choice #1</label>
+                           <input name="qid1" type="text" class="form-control" value="<%= Choices[0].ChoiceID %>" hidden>
+                           <input name="c1" type="text" class="form-control" value="<%= Choices[0].Title %>">
+                         </div>
+                       </div>
 
-                        <% for (var i =0; i <Users.length;  i++ ) { %>
-                          <tr>
-                            <td>
-                              <%= Users[i].UserID %>
-                            </td>
-                            <td>
-                              <%= Users[i].UserName %>
-                            </td>
-                            <td>
-                              <%= Users[i].DisplayName %>
-                            </td>
-                            <td>
-                              <%= Users[i].Score %>
-                            </td>
-                            <td>
-                              <%= Users[i].WeeklyScore %>
-                            </td>
-                            <td>
-                              <%= Users[i].Balance %>
-                            </td>
-                            <td>
-                              <a href="<%= "delete_user?id="+ Users[i].UserID %>" >
-                                <i class="material-icons">delete</i>
-                              </a>
+                       <div class="col-md-3">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">choice #2</label>
+                           <input name="qid2" type="text" class="form-control" value="<%= Choices[1].ChoiceID %>" hidden>
+                           <input name="c2" type="text" class="form-control" value="<%= Choices[1].Title %>">
+                         </div>
+                       </div>
 
-                              <a href="<%= "edit_user?id="+ Users[i].UserID %>" >
-                                <i class="material-icons">edit</i>
-                              </a>
+                       <div class="col-md-3">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">choice #3</label>
+                           <input name="qid3" type="text" class="form-control" value="<%= Choices[2].ChoiceID %>" hidden>
+                           <input name="c3" type="text" class="form-control" value="<%= Choices[2].Title %>">
+                         </div>
+                       </div>
 
-                            </td>
+                       <div class="col-md-3">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">choice #4</label>
+                           <input name="qid4" type="text" class="form-control" value="<%= Choices[3].ChoiceID %>" hidden>
+                           <input name="c4" type="text" class="form-control" value="<%= Choices[3].Title %>">
+                         </div>
+                       </div>
+                     </div>
 
-                          </tr>
+                     <div class="row" hidden>
+                       <div class="col-md-4">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Answer</label>
+                           <select name="answer" class="form-control">
+                             <option value="1">1</option>
+                             <option value="2">2</option>
+                             <option value="3">3</option>
+                             <option value="4">4</option>
+                           </select>
+                         </div>
+                       </div>
 
-                        <% } %>
+                       <div class="col-md-4">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Saftey Level</label>
+                           <select name="saftey"  class="form-control">
+                             <option value="Yes">YES</option>
+                             <option value="No">NO</option>
+                           </select>
+                         </div>
+                       </div>
+
+                       <div class="col-md-4">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">ContestID</label>
+                           <select name="contest" class="form-control">
+                             <option value="1">1</option>
+                             <option value="2">2</option>
+                           </select>
+                         </div>
+                       </div>
+
+                     </div>
+
+                     <div class="row" hidden>
+                       <div class="col-md-4">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Order</label>
+                           <input name="order" type="text" class="form-control">
+
+                         </div>
+                       </div>
+
+                       <div class="col-md-4">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Answer Time</label>
+                           <input name="time" type="text" class="form-control">
+
+                         </div>
+                       </div>
+
+                       <div class="col-md-4">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Prize</label>
+                           <input name="prize" type="text" class="form-control">
+
+                         </div>
+                       </div>
+
+                     </div>
+
+                     <button type="submit" class="btn btn-primary pull-right">Update Question</button>
+                     <div class="clearfix"></div>
+                   </form>
+                 </div>
+               </div>
+             </div>
+
+</div>
 
 
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-    </div>
   </div>
 
   <!--   Core JS Files   -->

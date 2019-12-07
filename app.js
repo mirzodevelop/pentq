@@ -243,6 +243,17 @@ app.get('/delete_lottery', function(req, res) {
 
 })
 
+app.get('/delete_user', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Deleter.delete_where('User', "UserID='" + req.query.id + "'", function(insert_result) {
+    res.redirect("users");
+  });
+
+})
+
+
 app.get('/tokens', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
@@ -296,6 +307,20 @@ app.get('/edit_token', function(req, res) {
 })
 
 
+app.get('/edit_user', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Selector.select_all_where("User","USerID="+req.query.id, function(select_result) {
+    var data = {
+      "User": select_result[0]
+    };
+    console.log(data);
+    res.render("edit_user.ejs", data);
+  });
+})
+
+
 app.get('/edit_option', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
@@ -324,6 +349,23 @@ app.get('/edit_package', function(req, res) {
   });
 })
 
+app.get('/edit_question', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Selector.select_all_where("Question","QuestionID="+req.query.id, function(select_result) {
+    Selector.select_all_where("Choice","QuestionID="+req.query.id, function(select_results) {
+    var data = {
+      "Question": select_result[0],
+      "Choices":select_results
+    };
+    console.log(data);
+    res.render("edit_question.ejs", data);
+  });
+});
+})
+
+
 app.post('/update_package', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
@@ -331,6 +373,39 @@ app.post('/update_package', function(req, res) {
   Updater.update_where("Package",
   ['Title',"Quantity","Price"],[req.body.title,req.body.quantity,req.body.price],"PackageID="+req.body.id, function(select_result) {
     res.redirect("shop");
+  });
+})
+
+
+app.post('/update_user', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Updater.update_where("User",
+  ['UserName',"DisplayName","Balance","PhoneNumber","Score","WeeklyScore"],[req.body.uname,req.body.dname,req.body.balance,req.body.phone,req.body.score,req.body.weekly],"UserID="+req.body.id, function(select_result) {
+    res.redirect("users");
+  });
+})
+
+app.post('/update_question', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Updater.update_where("Question",
+  ['QuestionStatement'],[req.body.statement],"QuestionID="+req.body.id, function(select_result) {
+    Updater.update_where("Choice",
+    ['Title'],[req.body.c1],"ChoiceID="+req.body.qid1, function(select_result) {
+      Updater.update_where("Choice",
+      ['Title'],[req.body.c2],"ChoiceID="+req.body.qid2, function(select_result) {
+        Updater.update_where("Choice",
+        ['Title'],[req.body.c3],"ChoiceID="+req.body.qid3, function(select_result) {
+          Updater.update_where("Choice",
+          ['Title'],[req.body.c4],"ChoiceID="+req.body.qid4, function(select_result) {
+            res.redirect("questions");
+          });
+        });
+      });
+    });
   });
 })
 
