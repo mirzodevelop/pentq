@@ -139,6 +139,71 @@ def money_request():
         response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
         return response
 
+@app.route('/api/remove_two', methods=['POST'])
+def remove_two():
+    data = request.get_json()
+    print(data)
+
+    try:
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT U.Rank FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
+        myresult = mycursor.fetchall()
+        print(myresult[0][0])
+        if(int(myresult[0][0])>3):
+            response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"only for 1-3 ranks."}),status=200,mimetype='application/json')
+            return response
+    except Exception as e:
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"Expired."}),status=200,mimetype='application/json')
+        return response
+
+    try:
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+        mycursor = mydb.cursor()
+        sql = "SELECT ChoiceID FROM Choice WHERE QuestionID="+request.form.get('QID')+" and IsTrue='No' LIMIT 2;"
+        mycursor.execute(sql)
+        myresult = mycursor.fetchall()
+        row_headers=[camelize(x[0]) for x in mycursor.description] #this will extract row headers
+        json_data=[]
+        for result in myresult:
+            json_data.append(dict(zip(row_headers,result)))
+        response = app.response_class(response=json.dumps({"result":"OK","array":json_data,"item":None}),status=200,mimetype='application/json')
+        return response
+    except Exception as e:
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
+        return response
+
+@app.route('/api/choice_percent', methods=['POST'])
+def choice_percent():
+    data = request.get_json()
+    print(data)
+
+    try:
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT U.Rank FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
+        myresult = mycursor.fetchall()
+        print(myresult[0][0])
+        if(int(myresult[0][0])>3):
+            response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"only for 1-3 ranks."}),status=200,mimetype='application/json')
+            return response
+    except Exception as e:
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"Expired."}),status=200,mimetype='application/json')
+        return response
+
+    try:
+        a = random.randint(3, 29)
+        b = random.randint(3, 50)
+        d = random.randint(3, 19)
+        c=100-a-b-d
+        arr=[a,b,c,d]
+        random.shuffle(arr)
+        print(arr)
+        response = app.response_class(response=json.dumps({"result":"OK","array":arr,"item":None}),status=200,mimetype='application/json')
+        return response
+    except Exception as e:
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
+        return response
 
 @app.route('/api/send_question_answer', methods=['POST'])
 def answer():
@@ -376,13 +441,13 @@ def get_all_lotteries():
 
     return ret
 
-@app.route('/api/leaderboard')
-def leaderboard():
+@app.route('/api/get_shop_items')
+def get_shop_items():
     ret=""""""
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT UserName,WeeklyScore,Score,Rank,WeeklyRank FROM User ORDER BY Score;")
+        mycursor.execute("SELECT * FROM Package;SET @rank=0, @score=-100; UPDATE User SET Rank=IF(@Score=(@Score:=Score), @Rank, @Rank:=@Rank+1) ORDER BY Score DESC;")
         myresult = mycursor.fetchall()
 
         row_headers=[camelize(x[0]) for x in mycursor.description] #this will extract row headers
@@ -392,8 +457,28 @@ def leaderboard():
         response = app.response_class(response=json.dumps({"result":"OK","array":json_data,"item":None}),status=200,mimetype='application/json')
         return response
     except Exception as e:
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
+        return response
+    return ret
+
+@app.route('/api/leaderboard')
+def leaderboard():
+    ret=""""""
+    try:
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT UserName,WeeklyScore,Score,Rank,WeeklyRank FROM User ORDER BY Score;SET @rank=0, @score=-100; UPDATE User SET Rank=IF(@Score=(@Score:=Score), @Rank, @Rank:=@Rank+1) ORDER BY Score DESC;")
+        myresult = mycursor.fetchall()
+
+        row_headers=[camelize(x[0]) for x in mycursor.description] #this will extract row headers
+        json_data=[]
+        for result in myresult:
+            json_data.append(dict(zip(row_headers,result)))
         response = app.response_class(response=json.dumps({"result":"OK","array":json_data,"item":None}),status=200,mimetype='application/json')
-        return json.dumps({"result":"OK","array":json_data,"item":None})
+        return response
+    except Exception as e:
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
+        return response
 
     return ret
 
