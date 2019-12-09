@@ -382,7 +382,7 @@ app.post('/update_user', function(req, res) {
     res.redirect("/login");
   }
   Updater.update_where("User",
-  ['UserName',"DisplayName","Balance","PhoneNumber","Score","WeeklyScore"],[req.body.uname,req.body.dname,req.body.balance,req.body.phone,req.body.score,req.body.weekly],"UserID="+req.body.id, function(select_result) {
+  ['UserName',"DisplayName","Balance","PhoneNumber","Score","WeeklyScore","AllowedPackageCount"],[req.body.uname,req.body.dname,req.body.balance,req.body.phone,req.body.score,req.body.weekly,req.body.allowed],"UserID="+req.body.id, function(select_result) {
     res.redirect("users");
   });
 })

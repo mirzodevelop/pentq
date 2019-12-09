@@ -251,6 +251,30 @@ def answer():
         json_data=[]
         for result in myresult:
             json_data.append(dict(zip(row_headers,result)))
+
+
+        mycursorX = mydb.cursor()
+        mycursorX.execute("SELECT U.UserID,U.AllowedPackageCount FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
+        myresultX = mycursorX.fetchall()
+        print(myresultX[0][0])
+        print(myresultX[0][1])
+
+        trueone="0"
+        falseone="1"
+
+        if result[0]=='Yes':
+            trueone="1"
+            falseone="0"
+        if int(myresultX[0][1])<1:
+            response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"Out of Allowed QUESTION"}),status=200,mimetype='application/json')
+            return response
+        mycursorY = mydb.cursor()
+        sql = "UPDATE User Set AllowedPackageCount= AllowedPackageCount - 1 , TotalTrueAnswers=TotalTrueAnswers+"+trueone+", TotalFalseAnswers=TotalFalseAnswers+"+falseone+" WHERE UserID="+str(myresultX[0][0])+";"
+        print(sql)
+        mycursorY.execute(sql)
+        mydb.commit()
+
+
         response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":{"isTrue":result[0]=='Yes'}}),status=200,mimetype='application/json')
         return response
 

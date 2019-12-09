@@ -57,7 +57,7 @@
                      </div>
 
                      <div class="row">
-                       <div class="col-md-6">
+                       <div class="col-md-4">
                          <div class="form-group">
                            <label class="bmd-label-floating">Phone Number</label>
 
@@ -65,12 +65,20 @@
                          </div>
                        </div>
 
-                       <div class="col-md-6">
+                       <div class="col-md-4">
                          <div class="form-group">
                            <label class="bmd-label-floating">Balance</label>
                            <input name="balance" type="text" class="form-control" value="<%= User.Balance %>">
                          </div>
                        </div>
+
+                       <div class="col-md-4">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Allowed Count</label>
+                           <input name="allowed" type="text" class="form-control" value="<%= User.AllowedPackageCount %>">
+                         </div>
+                       </div>
+
                      </div>
 
                      <div class="row">
