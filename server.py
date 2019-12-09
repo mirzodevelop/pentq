@@ -446,8 +446,8 @@ def reward_for_video():
         myresult = mycursor.fetchall()
         print(myresult[0][0])
 
-        sql = "UPDATE User Set Score= Score + %s WHERE UserID=%s;"
-        val = ("30",str(myresult[0][0]))
+        sql = "UPDATE User Set AllowedPackageCount= AllowedPackageCount + %s WHERE UserID=%s;"
+        val = ("1",str(myresult[0][0]))
         mycursor.execute(sql, val)
         mydb.commit()
 
