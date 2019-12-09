@@ -253,6 +253,11 @@ def answer():
             json_data.append(dict(zip(row_headers,result)))
 
 
+        mycursorQ = mydb.cursor()
+        mycursorQ.execute("SELECT Prize,IsSaftyLevel From Question WHERE QuestionID="+str(request.form.get('QID'))+";")
+        myresultQ = mycursorQ.fetchall()
+        print(myresultQ[0][0])
+
         mycursorX = mydb.cursor()
         mycursorX.execute("SELECT U.UserID,U.AllowedPackageCount FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
         myresultX = mycursorX.fetchall()
@@ -262,9 +267,19 @@ def answer():
         trueone="0"
         falseone="1"
 
-        if result[0]=='Yes':
+        if result[0]=='Yes' and myresultQ[0][1]=='Yes':
             trueone="1"
             falseone="0"
+            mycursorZ = mydb.cursor()
+            sql = "UPDATE User Set TempScore= "+str(myresultQ[0][0])+" WHERE UserID="+str(myresultX[0][0])+";"
+            print(sql)
+            mycursorZ.execute(sql)
+        else:
+            mycursorA = mydb.cursor()
+            sql = "UPDATE User Set Score=Score+TempScore , WeeklyScore=WeeklyScore+TempScore , TempScore=0 WHERE UserID="+str(myresultX[0][0])+";"
+            print(sql)
+            mycursorA.execute(sql)
+
         if int(myresultX[0][1])<1:
             response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"Out of Allowed QUESTION"}),status=200,mimetype='application/json')
             return response
@@ -363,8 +378,8 @@ def register_new_user():
         rcode=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance,TotalTrueAnswers,TotalFalseAnswers,TotalPaid) VALUES (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s)"
-        val = (request.form.get('UserName'), "0","0",request.form.get('Password'),request.form.get('DisplayName'),"3",request.form.get('PhoneNumber'),"1","1",rcode,"0","0","0","0")
+        sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance,TotalTrueAnswers,TotalFalseAnswers,TotalPaid,TempScore) VALUES (%s, %s, %s, %s, %s, %s,%s, %s,%s,%s,%s,%s,%s,%s,%s)"
+        val = (request.form.get('UserName'), "0","0",request.form.get('Password'),request.form.get('DisplayName'),"3",request.form.get('PhoneNumber'),"1","1",rcode,"0","0","0","0","0")
         mycursor.execute(sql, val)
         mydb.commit()
 
