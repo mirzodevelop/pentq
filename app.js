@@ -11,6 +11,8 @@ var formidable = require('formidable');
 var mysql = require('mysql');
 var md5 = require('md5');
 var fileUpload=require('express-fileupload');
+const readXlsxFile = require('read-excel-file/node');
+var XLSX = require('xlsx');
 
 var Deleter = require("./Deleter.js");
 var Selector = require("./Selector.js");
@@ -153,6 +155,53 @@ app.post('/commit_video', function(req, res) {
   });
 })
 
+app.post('/commit_excel', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  console.log(req.files);
+  fs.rename(req.files.excel.tempFilePath, req.files.excel.tempFilePath+'.'+req.files.excel.name.split(".")[1], function(err) {
+    if ( err ) console.log('ERROR: ' + err);
+
+
+    var workbook = XLSX.readFile(req.files.excel.tempFilePath+'.'+req.files.excel.name.split(".")[1]);
+    var sheet_name_list = workbook.SheetNames;
+    var xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+    console.log(xlData);
+      for(var i=0;i<xlData.length;i++)
+      {
+        if(xlData.length-1 ==i){
+        res.redirect("questions");
+        }
+        
+        console.log(i);
+        line=xlData[i]
+        Insertor.insert_one('Question', ['QuestionStatement', 'OrderNum', 'QuestionType', 'ContestID', 'Prize', 'AnswerTime', 'IsSaftyLevel'],
+          [xlData[i]["Stetement"], i, 'MultipleChoice', xlData[i]["ContestID"], xlData[i]["Prize"], xlData[i]["Time"],xlData[i]["Safety Point"]],
+          function(insert_result) {
+            console.log(insert_result.insertId);
+            var qunum = insert_result.insertId;
+            var istrue = 'No';
+            console.log(line);
+
+            Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, line["choice1"], (line["True Choice"] == 1) ? "Yes" : "No"], function(res_) {
+
+              Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, line["choice2"], (line["True Choice"] == 2) ? "Yes" : "No"], function(res_) {
+
+                Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, line["choice3"], (line["True Choice"] == 3) ? "Yes" : "No"], function(res_) {
+
+                  Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, line["choice4"], (line["True Choice"] == 4) ? "Yes" : "No"], function(res_) {
+
+                  });
+                });
+              });
+            });
+          });
+      }
+
+  });
+})
+
 app.post('/commit_package', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
@@ -176,6 +225,13 @@ app.get('/questions', function(req, res) {
     console.log(data);
     res.render("questions.ejs", data);
   });
+})
+
+app.get('/new_excel', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  res.render("new_excel.ejs");
 })
 
 app.get('/new_lottery', function(req, res) {
