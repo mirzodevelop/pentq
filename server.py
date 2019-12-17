@@ -88,7 +88,7 @@ def userinfo():
 
         print(myresult[0][5])
 
-        mycursor2.execute("SELECT RequestDate,Estate,Amount,AccountName FROM MoneyRequest WHERE UserName='"+myresult[0][5]+"' LIMIT 2;")
+        mycursor2.execute("SELECT RequestDate,Estate,Amount,AccountName FROM MoneyRequest WHERE UserName='"+myresult[0][5]+"' ORDER BY MoneyRequestID Desc LIMIT 2;")
         myresult2 = mycursor2.fetchall()
 
         mycursor3.execute("SELECT * FROM WeeklyRecord WHERE UserName='"+myresult[0][5]+"';")
@@ -143,6 +143,7 @@ def lottery():
             sql = "UPDATE User Set DoneLottery='Yes' WHERE UserName='"+str(myresultP[0][1])+"';"
             print(sql)
             mycursorZ.execute(sql)
+            mydb.commit()
             response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":json_data[0]}),status=200,mimetype='application/json')
             return response
         else:
@@ -178,6 +179,11 @@ def money_request():
         sql = "INSERT INTO MoneyRequest (Estate,BankAccount,AccountName,Amount,RequestDate,UserName) VALUES (%s, %s, %s, %s, %s,%s)"
         val = ("New",request.form.get('AccountNumber'),request.form.get('AccountName').encode("utf8"),request.form.get('Amount'),jdatetime.date.today(),myresult[0][1])
         mycursor.execute(sql, val)
+        mydb.commit()
+
+        mycursorT = mydb.cursor()
+        sql = "UPDATE User SET Balance=Balance-"+str(request.form.get('Amount'))+";"
+        mycursorT.execute(sql)
         mydb.commit()
         response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":None}),status=200,mimetype='application/json')
         return response
@@ -262,16 +268,15 @@ def answer():
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT IsTrue FROM Choice WHERE ChoiceID='"+str(request.form.get('ChoiceID'))+"';")
+        mycursor.execute("SELECT IsTrue FROM Choice WHERE ChoiceID='"+str(request.form.get('ChoiceID'))+"' AND QuestionID='"+str(request.form.get('QID'))+"';")
         myresult = mycursor.fetchall()
         row_headers=[camelize(x[0]) for x in mycursor.description] #this will extract row headers
         json_data=[]
         for result in myresult:
             json_data.append(dict(zip(row_headers,result)))
 
-
         mycursorQ = mydb.cursor()
-        mycursorQ.execute("SELECT Prize,IsSaftyLevel From Question WHERE QuestionID="+str(request.form.get('QID'))+";")
+        mycursorQ.execute("SELECT Prize,IsSaftyLevel,ContestID From Question WHERE QuestionID="+str(request.form.get('QID'))+";")
         myresultQ = mycursorQ.fetchall()
         print(myresultQ[0][0])
 
@@ -297,9 +302,17 @@ def answer():
             mycursorZ.execute(sql)
         else:
             mycursorA = mydb.cursor()
-            sql = "UPDATE User Set Score=Score+TempScore , WeeklyScore=WeeklyScore+TempScore , TempScore=0 WHERE UserID="+str(myresultX[0][0])+";"
+            if myresultQ[0][2]==1:
+                sql = "UPDATE User Set Score=Score+TempScore , WeeklyScore=WeeklyScore+TempScore , TempScore=0 WHERE UserID="+str(myresultX[0][0])+";"
+            else:
+                sql = "UPDATE User Set Balance=Balance+TempScore , TempScore=0 WHERE UserID="+str(myresultX[0][0])+";"
             print(sql)
             mycursorA.execute(sql)
+
+        mycursorL = mydb.cursor()
+        sql = "INSERT INTO AnswerLog (QID,UserName,Estate) VALUES ('"+str(request.form.get('QID'))+"','"+str(myresultX[0][0])+"','"+str(result[0]=='Yes')+"');"
+        print(sql)
+        mycursorL.execute(sql)
 
         if int(myresultX[0][1])<1:
             response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"Out of Allowed QUESTION"}),status=200,mimetype='application/json')
@@ -313,14 +326,15 @@ def answer():
         mycursorY.execute(sql)
         mydb.commit()
 
-
-
         response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":{"isTrue":result[0]=='Yes'}}),status=200,mimetype='application/json')
         return response
 
     except Exception as e:
         print(str(e))
-        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
+        ermsg=str(e)
+        if(str(e)=="local variable 'result' referenced before assignment"):
+            ermsg="گزینه ارسالی متعلق به سوال نیست."
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":ermsg}),status=200,mimetype='application/json')
         return response
 
 
@@ -332,9 +346,10 @@ def questions():
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT U.Rank FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
+        mycursor.execute("SELECT U.Rank,U.UserID FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
         myresult = mycursor.fetchall()
         print(myresult[0][0])
+        userid=myresult[0][1]
         if(int(myresult[0][0])>3 and int(request.form.get('ContestID'))==2):
             response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"only for 1-3 ranks."}),status=200,mimetype='application/json')
             return response
@@ -345,8 +360,18 @@ def questions():
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
         mycursor.execute("SELECT * FROM Question  WHERE ContestID="+str(request.form.get('ContestID'))+" ORDER BY OrderNum;")
-
         myresult = mycursor.fetchall()
+
+        sqq="SELECT QID FROM AnswerLog WHERE UserName='"+str(userid)+"';"
+        print(sqq)
+        mycursor.execute(sqq)
+        myresult2 = mycursor.fetchall()
+
+        print(list(myresult2))
+        answered = [item[0] for item in myresult2]
+        print(answered)
+        print(29 in answered)
+
         if len(myresult)==0:
             response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"ContestID "+ str(request.form.get('ContestID')) +" Not Exist." }),status=200,mimetype='application/json')
             return response
@@ -360,7 +385,9 @@ def questions():
                 json_data=[]
                 for result in myresult2:
                     json_data.append(dict(zip(row_headers,result)))
-                final.append({"question":{"questionID":qu[1],"order":qu[0],"statement":qu[3],"prize":qu[6],"isSaftyLevel":qu[7]=='Yes',"answerTime":qu[8]},"choices":json_data})
+
+                if not qu[1] in answered:
+                    final.append({"question":{"questionID":qu[1],"order":qu[0],"statement":qu[3],"prize":qu[6],"isSaftyLevel":qu[7]=='Yes',"answerTime":qu[8]},"choices":json_data})
             except Exception as e:
                 response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
                 return response
@@ -417,11 +444,12 @@ def register_new_user():
 @app.route('/api/guest_session', methods=['POST'])
 def guest_session():
     token=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(17))
+    usrnme='guest_'+''.join(random.choice(string.digits) for _ in range(8))
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
         sql = "INSERT INTO Session (Token, UserID,Estate) VALUES (%s, %s, %s)"
-        val = (token,request.form.get('UserName'),"Active")
+        val = (token,usrnme,"Active")
         mycursor.execute(sql, val)
         mydb.commit()
     except Exception as e:
@@ -432,7 +460,7 @@ def guest_session():
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
         sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance,TotalTrueAnswers,TotalFalseAnswers,TotalPaid,TempScore,DoneLottery) VALUES (%s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        val = (request.form.get('UserName'), "0","0",request.form.get('Password'),request.form.get('DisplayName'),"3",request.form.get('PhoneNumber'),"1","1",rcode,"0","0","0","0","0","No")
+        val = (usrnme, "0","0","","","3","","1","1","","0","0","0","0","0","No")
         mycursor.execute(sql, val)
         mydb.commit()
 
@@ -509,15 +537,22 @@ def withdraw():
         mycursor = mydb.cursor()
         mycursor.execute("SELECT U.UserID FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
         myresult = mycursor.fetchall()
-        mycursor.execute("SELECT Prize FROM Question WHERE QuestionID="+request.form.get('QID')+";")
+        mycursor.execute("SELECT Prize,	ContestID FROM Question WHERE QuestionID="+request.form.get('QID')+";")
         myresult2 = mycursor.fetchall()
         print(myresult[0][0])
         print(myresult2[0][0])
+        print(myresult2[0][1])
 
-        sql = "UPDATE User Set Score= Score + %s WHERE UserID=%s;"
-        val = (str(myresult2[0][0]),str(myresult[0][0]))
-        mycursor.execute(sql, val)
-        mydb.commit()
+        if myresult2[0][1]==1:
+            sql = "UPDATE User Set Score= Score + %s WHERE UserID=%s;"
+            val = (str(myresult2[0][0]),str(myresult[0][0]))
+            mycursor.execute(sql, val)
+            mydb.commit()
+        else:
+            sql = "UPDATE User Set Balance= Balance + %s WHERE UserID=%s;"
+            val = (str(myresult2[0][0]),str(myresult[0][0]))
+            mycursor.execute(sql, val)
+            mydb.commit()
 
         json_data=[]
         response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":None}),status=200,mimetype='application/json')
