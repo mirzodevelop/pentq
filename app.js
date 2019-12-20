@@ -358,6 +358,25 @@ app.get('/delete_user', function(req, res) {
 })
 
 
+app.get('/delete_banner', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Deleter.delete_where('Image', "ImageID='" + req.query.id + "'", function(insert_result) {
+    res.redirect("banners");
+  });
+})
+
+app.get('/delete_video', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Deleter.delete_where('Video', "VideoID='" + req.query.id + "'", function(insert_result) {
+    res.redirect("videos");
+  });
+})
+
+
 app.get('/tokens', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");

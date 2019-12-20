@@ -65,7 +65,7 @@
                             <td>
                               <%= Videos[i].VideoID %>
                             </td>
-              
+
                             <td>
                               <%= Videos[i].Title %>
                             </td>
@@ -74,6 +74,12 @@
                               <a href="<%=  Videos[i].Address %>" >
                                 Play
                               </a>
+
+
+                            <a href="<%= "/delete_video?id="+ Videos[i].VideoID %>" >
+                              <i class="material-icons">delete</i>
+                            </a>
+
 
                             </td>
                           </tr>

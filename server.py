@@ -76,6 +76,15 @@ def authenticate():
 @app.route('/api/get_user_info', methods=['GET'])
 def userinfo():
     data = request.get_json()
+#    try:
+#        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+#        mycursor = mydb.cursor()
+#        sql = "SET @rank=0, @score=-100; UPDATE User SET Rank=IF(@Score=(@Score:=Score), @Rank, @Rank:=@Rank+1) ORDER BY Score DESC;"
+#        mycursor.execute(sql)
+#        mydb.commit()
+#    except Exception as e:
+#        print(str(e))
+
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
 
@@ -346,10 +355,11 @@ def questions():
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT U.Rank,U.UserID FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
+        mycursor.execute("SELECT U.Rank,U.UserID,U.AllowedPackageCount FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
         myresult = mycursor.fetchall()
         print(myresult[0][0])
         userid=myresult[0][1]
+        qnum=myresult[0][2]
         if(int(myresult[0][0])>3 and int(request.form.get('ContestID'))==2):
             response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"only for 1-3 ranks."}),status=200,mimetype='application/json')
             return response
@@ -359,7 +369,7 @@ def questions():
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT * FROM Question  WHERE ContestID="+str(request.form.get('ContestID'))+" ORDER BY OrderNum;")
+        mycursor.execute("SELECT * FROM Question  WHERE ContestID="+str(request.form.get('ContestID'))+" ORDER BY OrderNum LIMIT "+str(qnum)+";")
         myresult = mycursor.fetchall()
 
         sqq="SELECT QID FROM AnswerLog WHERE UserName='"+str(userid)+"';"
@@ -432,6 +442,24 @@ def register_new_user():
         mycursor = mydb.cursor()
         sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance,TotalTrueAnswers,TotalFalseAnswers,TotalPaid,TempScore,DoneLottery) VALUES (%s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
         val = (request.form.get('UserName'), "0","0",request.form.get('Password'),request.form.get('DisplayName'),"3",request.form.get('PhoneNumber'),"1","1",rcode,"0","0","0","0","0","No")
+        mycursor.execute(sql, val)
+        mydb.commit()
+
+
+        mycursorO = mydb.cursor()
+        mycursorO.execute("SELECT Value FROM OptionParameter WHERE Tag='referral_prize';")
+        myresultO = mycursorO.fetchall()
+        print("Param:")
+        print(myresultO[0][0])
+
+        mycursorR = mydb.cursor()
+        mycursorR.execute("SELECT UserID FROM User WHERE ReferralCode='"+request.form.get('ReferredBy')+"';")
+        myresultR = mycursorR.fetchall()
+        print("Param:")
+        print(myresultR[0][0])
+
+        sql = "UPDATE User Set AllowedPackageCount= AllowedPackageCount + %s WHERE UserID=%s;"
+        val = (myresultO[0][0],str(myresultR[0][0]))
         mycursor.execute(sql, val)
         mydb.commit()
 
@@ -573,8 +601,14 @@ def reward_for_video():
         myresult = mycursor.fetchall()
         print(myresult[0][0])
 
+        mycursorO = mydb.cursor()
+        mycursorO.execute("SELECT Value FROM OptionParameter WHERE Tag='ads_prize';")
+        myresultO = mycursorO.fetchall()
+        print("Param:")
+        print(myresultO[0][0])
+
         sql = "UPDATE User Set AllowedPackageCount= AllowedPackageCount + %s WHERE UserID=%s;"
-        val = ("1",str(myresult[0][0]))
+        val = (myresultO[0][0],str(myresult[0][0]))
         mycursor.execute(sql, val)
         mydb.commit()
 
