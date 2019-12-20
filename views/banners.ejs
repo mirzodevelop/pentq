@@ -2,11 +2,12 @@
 <html lang="en">
 
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta charset="utf-8" />
   <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-icon.png">
   <link rel="icon" type="image/png" href="/img/favicon.png">
+
   <title>
-     QuizGame
+     QuizGame: Banners
   </title>
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
   <!--     Fonts and icons     -->
@@ -36,99 +37,56 @@
     </div>
     <div class="main-panel">
 
-      <div class="content">
-        <div class="container-fluid">
-          <div class="card">
-            <div class="card-header card-header-primary">
-              <h3 class="card-title">Admin Dashboard</h3>
-
-            </div>
-
-            <div class="col-md-12">
-              <div class="places-buttons">
-                <div class="row">
-                  <div class="col-md-6 ml-auto mr-auto text-center">
-
-                  </div>
-
-				  <br> <br>
+      <div class="col-md-12">
+              <div class="card">
+                <div class="card-header card-header-primary">
+                  <h4 class="card-title ">All Banners</h4>
+                  <p class="card-category">Manage Banners of varoius ad networks.</p>
                 </div>
-                <div class="row">
-                  <div class="col-lg-8 col-md-10 ml-auto mr-auto">
-                    <div class="row">
-                      <div class="col-md-4">
-                        <a href="questions">
-                          <button class="btn btn-primary btn-block" >Questions</button>
-                        </a>
-                      </div>
-                      <div class="col-md-4">
-                        <a href="new_question">
-                          <button class="btn btn-primary btn-block" >New Question</button>
-                        </a>
-                      </div>
-                      <div class="col-md-4">
-                        <a href="new_lottery">
-                          <button class="btn btn-primary btn-block" >New Lottery Item</button>
-                        </a>
-                      </div>
-                    </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead class=" text-primary">
+                        <th>
+                          ID
+                        </th>
+
+                        <th>
+                          Title
+                        </th>
+                        <th>
+                          Operations
+                        </th>
+                      </thead>
+                      <tbody>
+
+                        <% for (var i =0; i <Images.length;  i++ ) { %>
+                          <tr>
+                            <td>
+                              <%= Images[i].ImageID %>
+                            </td>
+
+                            <td>
+                              <%= Images[i].Title %>
+                            </td>
+
+                            <td>
+                              <a href="<%=  Images[i].Address %>" >
+                                Show
+                              </a>
+
+                            </td>
+                          </tr>
+
+                        <% } %>
+
+
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-
-                <div class="row">
-                  <div class="col-lg-8 col-md-10 ml-auto mr-auto">
-                    <div class="row">
-                      <div class="col-md-4">
-                        <a href="new_package">
-                          <button class="btn btn-primary btn-block" >New Package</button>
-                        </a>
-                      </div>
-
-                      <div class="col-md-4">
-                        <a href="new_video">
-                          <button class="btn btn-primary btn-block" >New Video</button>
-                        </a>
-                      </div>
-
-                      <div class="col-md-4">
-                      <a href="new_excel">
-                        <button class="btn btn-primary btn-block" >Import Excel</button>
-                      </a>
-                    </div>
-                    </div>
-
-                    </div>
-                  </div>
-
-                  <div class="row">
-                    <div class="col-lg-8 col-md-10 ml-auto mr-auto">
-                      <div class="row">
-                        <div class="col-md-4">
-                          <a href="new_banner">
-                            <button class="btn btn-primary btn-block" >New Banner</button>
-                          </a>
-                        </div>
-                        <div class="col-md-4" hidden>
-                          <a href="new_question">
-                            <button class="btn btn-primary btn-block" >New Question</button>
-                          </a>
-                        </div>
-                        <div class="col-md-4" hidden>
-                          <a href="new_lottery">
-                            <button class="btn btn-primary btn-block" >New Lottery Item</button>
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
               </div>
             </div>
-          </div>
-        </div>
-      </div>
 
     </div>
   </div>

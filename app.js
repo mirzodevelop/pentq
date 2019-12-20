@@ -93,6 +93,16 @@ app.get('/delete_question', function(req, res) {
   });
 })
 
+app.get('/delete_request', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Deleter.delete_where('MoneyRequest', "MoneyRequestID='" + req.query.id + "'", function(insert_result) {
+    res.redirect("requests");
+  });
+})
+
+
 app.get('/delete_package', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
@@ -148,9 +158,26 @@ app.post('/commit_video', function(req, res) {
     if ( err ) console.log('ERROR: ' + err);
 
     Insertor.insert_one('Video', ['Title','Address'],
-      [req.body.title,req.files.video.tempFilePath+'.'+req.files.video.name.split(".")[1]],
+      [req.body.title,req.files.video.tempFilePath.replace("/usr/games/panel0/public","http://136.243.86.145:8888")+'.'+req.files.video.name.split(".")[1]],
       function(insert_result) {
-        res.redirect("/");
+        res.redirect("/videos");
+      });
+  });
+})
+
+
+app.post('/commit_banner', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  console.log(req.files);
+  fs.rename(req.files.video.tempFilePath, req.files.video.tempFilePath+'.'+req.files.video.name.split(".")[1], function(err) {
+    if ( err ) console.log('ERROR: ' + err);
+
+    Insertor.insert_one('Image', ['Title','Address'],
+      [req.body.title,req.files.video.tempFilePath.replace("/usr/games/panel0/public","http://136.243.86.145:8888")+'.'+req.files.video.name.split(".")[1]],
+      function(insert_result) {
+        res.redirect("/banners");
       });
   });
 })
@@ -173,7 +200,7 @@ app.post('/commit_excel', function(req, res) {
         if(xlData.length-1 ==i){
         res.redirect("questions");
         }
-        
+
         console.log(i);
         line=xlData[i]
         Insertor.insert_one('Question', ['QuestionStatement', 'OrderNum', 'QuestionType', 'ContestID', 'Prize', 'AnswerTime', 'IsSaftyLevel'],
@@ -227,11 +254,32 @@ app.get('/questions', function(req, res) {
   });
 })
 
+
+app.get('/banners', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Selector.select_all("Image", function(select_result) {
+    var data = {
+      "Images": select_result
+    };
+    console.log(data);
+    res.render("banners.ejs", data);
+  });
+})
+
 app.get('/new_excel', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
   }
   res.render("new_excel.ejs");
+})
+
+app.get('/new_banner', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  res.render("new_banner.ejs");
 })
 
 app.get('/new_lottery', function(req, res) {
@@ -323,6 +371,19 @@ app.get('/tokens', function(req, res) {
   });
 })
 
+app.get('/videos', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Selector.select_all("Video", function(select_result) {
+    var data = {
+      "Videos": select_result
+    };
+    console.log(data);
+    res.render("videos.ejs", data);
+  });
+})
+
 app.get('/options', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
@@ -373,6 +434,20 @@ app.get('/edit_user', function(req, res) {
     };
     console.log(data);
     res.render("edit_user.ejs", data);
+  });
+})
+
+
+app.get('/edit_request', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Selector.select_all_where("MoneyRequest","MoneyRequestID="+req.query.id, function(select_result) {
+    var data = {
+      "MoneyRequest": select_result[0]
+    };
+    console.log(data);
+    res.render("edit_request.ejs", data);
   });
 })
 
@@ -471,6 +546,16 @@ app.get('/paid', function(req, res) {
   }
   Updater.update_where("MoneyRequest",
   ['Estate'],["Paid"],"MoneyRequestID="+req.query.id, function(select_result) {
+    res.redirect("requests");
+  });
+})
+
+app.get('/suspend', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Updater.update_where("MoneyRequest",
+  ['Estate'],["Suspended"],"MoneyRequestID="+req.query.id, function(select_result) {
     res.redirect("requests");
   });
 })

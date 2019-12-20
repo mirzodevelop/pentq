@@ -60,13 +60,13 @@
                           Name on Account
                         </th>
                         <th>
-                          Name on Account
-                        </th>
-                        <th>
                           Amount
                         </th>
                         <th>
                           Status
+                        </th>
+                        <th>
+                          Operations
                         </th>
                       </thead>
                       <tbody>
@@ -98,6 +98,19 @@
                               <a href="<%= "paid?id="+ Requests[i].MoneyRequestID %>" >
                                 Mark As Paid
                               </a>
+                            </br>
+                            <a href="<%= "suspend?id="+ Requests[i].MoneyRequestID %>" >
+                              Mark As Suspended
+                            </a>
+                          </br>
+
+                          <a href="<%= "delete_request?id="+ Requests[i].MoneyRequestID %>" >
+                            <i class="material-icons">delete</i>
+                          </a>
+
+                          <a href="<%= "edit_request?id="+ Requests[i].MoneyRequestID %>" >
+                            <i class="material-icons">edit</i>
+                          </a>
 
                             </td>
                           </tr>
