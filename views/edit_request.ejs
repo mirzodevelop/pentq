@@ -37,21 +37,20 @@
                    <p class="card-category"></p>
                  </div>
                  <div class="card-body">
-                   <form action="/update_MoneyRequest" method="POST">
-                     <div class="row">
+                   <form action="/update_request" method="POST">
                        <div class="col-md-6">
                          <div class="form-group">
                            <label class="bmd-label-floating">Account Name</label>
                            <input name="id" type="text" class="form-control" value="<%= MoneyRequest.MoneyRequestID %>" hidden>
 
-                           <input name="uname" type="text" class="form-control" value="<%= MoneyRequest.AccountName %>" >
+                           <input name="name" type="text" class="form-control" value="<%= MoneyRequest.AccountName %>" >
                          </div>
                        </div>
 
                        <div class="col-md-6">
                          <div class="form-group">
                            <label class="bmd-label-floating">Account Number</label>
-                           <input name="dname" type="text" class="form-control" value="<%= MoneyRequest.BankAccount %>">
+                           <input name="bank" type="text" class="form-control" value="<%= MoneyRequest.BankAccount %>">
                          </div>
                        </div>
                      </div>
@@ -61,7 +60,7 @@
                          <div class="form-group">
                            <label class="bmd-label-floating">Amount</label>
 
-                           <input name="phone" type="text" class="form-control" value="<%= MoneyRequest.Amount %>">
+                           <input name="amount" type="text" class="form-control" value="<%= MoneyRequest.Amount %>">
                          </div>
                        </div>
 
@@ -69,7 +68,7 @@
                          <div class="form-group">
                            <label class="bmd-label-floating">UserName</label>
 
-                           <input name="phone" type="text" class="form-control" value="<%= MoneyRequest.UserName %>" readonly>
+                           <input name="uname" type="text" class="form-control" value="<%= MoneyRequest.UserName %>" readonly>
                          </div>
                        </div>
 

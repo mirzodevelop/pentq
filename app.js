@@ -13,6 +13,8 @@ var md5 = require('md5');
 var fileUpload=require('express-fileupload');
 const readXlsxFile = require('read-excel-file/node');
 var XLSX = require('xlsx');
+const delay = require('delay');
+
 
 var Deleter = require("./Deleter.js");
 var Selector = require("./Selector.js");
@@ -24,6 +26,9 @@ var iconv = new Iconv('UTF-8', 'ISO-8859-1');
 
 const utf8 = require('utf8');
 
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
 
 //configs
 const port = 8888;
@@ -193,8 +198,11 @@ app.post('/commit_excel', function(req, res) {
 
     var workbook = XLSX.readFile(req.files.excel.tempFilePath+'.'+req.files.excel.name.split(".")[1]);
     var sheet_name_list = workbook.SheetNames;
-    var xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+    xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+
     console.log(xlData);
+    var prom=4;
+
       for(var i=0;i<xlData.length;i++)
       {
         if(xlData.length-1 ==i){
@@ -202,28 +210,57 @@ app.post('/commit_excel', function(req, res) {
         }
 
         console.log(i);
-        line=xlData[i]
-        Insertor.insert_one('Question', ['QuestionStatement', 'OrderNum', 'QuestionType', 'ContestID', 'Prize', 'AnswerTime', 'IsSaftyLevel'],
-          [xlData[i]["Stetement"], i, 'MultipleChoice', xlData[i]["ContestID"], xlData[i]["Prize"], xlData[i]["Time"],xlData[i]["Safety Point"]],
-          function(insert_result) {
-            console.log(insert_result.insertId);
-            var qunum = insert_result.insertId;
-            var istrue = 'No';
-            console.log(line);
+        line=xlData[i];
+        console.log("********");
+        console.log(line);
 
-            Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, line["choice1"], (line["True Choice"] == 1) ? "Yes" : "No"], function(res_) {
+        var xres=Insertor.s_insert_one('Question', ['QuestionStatement', 'OrderNum', 'QuestionType', 'ContestID', 'Prize', 'AnswerTime', 'IsSaftyLevel'],
+          [xlData[i]["Stetement"], i, 'MultipleChoice',"1","15","10","No"]);
 
-              Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, line["choice2"], (line["True Choice"] == 2) ? "Yes" : "No"], function(res_) {
+        console.log("XXXXXXXXX:");
+        console.log(xres['insertId']);
 
-                Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, line["choice3"], (line["True Choice"] == 3) ? "Yes" : "No"], function(res_) {
+        qunum=xres['insertId'];
 
-                  Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, line["choice4"], (line["True Choice"] == 4) ? "Yes" : "No"], function(res_) {
+        var trueans=getRandomInt(4);
 
-                  });
-                });
-              });
+        c0=line["choice1"];
+        c1=line["choice2"];
+        c2=line["choice3"];
+        c3=line["choice4"];
+
+        if(trueans==1)
+        {
+          c0=line["choice2"];
+          c1=line["choice1"];
+          c2=line["choice4"];
+          c3=line["choice3"];
+        }
+        if(trueans==2)
+        {
+          c0=line["choice2"];
+          c1=line["choice4"];
+          c2=line["choice1"];
+          c3=line["choice3"];
+        }
+
+        if(trueans==3)
+        {
+          c0=line["choice2"];
+          c1=line["choice4"];
+          c2=line["choice3"];
+          c3=line["choice1"];
+        }
+
+        Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, c0, (trueans == 0) ? "Yes" : "No"], function(res_) {
             });
-          });
+        Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, c1, (trueans == 1) ? "Yes" : "No"], function(res_) {
+            });
+        Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, c2, (trueans == 2) ? "Yes" : "No"], function(res_) {
+            });
+        Insertor.insert_one('Choice', ['QuestionID', 'Title', 'IsTrue'], [qunum, c3, (trueans == 3) ? "Yes" : "No"], function(res_) {
+            });
+
       }
 
   });
@@ -526,6 +563,16 @@ app.post('/update_package', function(req, res) {
   });
 })
 
+
+app.post('/update_request', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Updater.update_where("MoneyRequest",
+  ['AccountName',"BankAccount","Amount"],[req.body.name,req.body.bank,req.body.amount],"PackageID="+req.body.id, function(select_result) {
+    res.redirect("shop");
+  });
+})
 
 app.post('/update_user', function(req, res) {
   if (typeof req.session.user == 'undefined') {

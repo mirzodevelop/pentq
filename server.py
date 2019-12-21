@@ -153,6 +153,21 @@ def lottery():
             print(sql)
             mycursorZ.execute(sql)
             mydb.commit()
+            print("type:")
+
+            if json_data[0]["type"]=="freeGame":
+                mycursorD = mydb.cursor()
+                sql = "UPDATE User Set AllowedPackageCount=AllowedPackageCount+ "+str(json_data[0]["amount"])+" WHERE UserName='"+str(myresultP[0][1])+"';"
+                print(sql)
+                mycursorD.execute(sql)
+                mydb.commit()
+            else:
+                mycursorD = mydb.cursor()
+                sql = "UPDATE User Set Score=Score+ "+str(json_data[0]["amount"])+" WHERE UserName='"+str(myresultP[0][1])+"';"
+                print(sql)
+                mycursorD.execute(sql)
+                mydb.commit()
+
             response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":json_data[0]}),status=200,mimetype='application/json')
             return response
         else:
@@ -369,7 +384,11 @@ def questions():
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT * FROM Question  WHERE ContestID="+str(request.form.get('ContestID'))+" ORDER BY OrderNum LIMIT "+str(qnum)+";")
+        sqlstr="SELECT * FROM Question  WHERE ContestID="+str(request.form.get('ContestID'))+" ORDER BY OrderNum LIMIT "+str(qnum)+";"
+        if request.form.get('ContestID')=='1' :
+            sqlstr="SELECT * FROM Question WHERE ContestID="+str(request.form.get('ContestID'))+" ORDER BY RAND() LIMIT "+str(qnum)+";"
+        print(sqlstr)
+        mycursor.execute(sqlstr)
         myresult = mycursor.fetchall()
 
         sqq="SELECT QID FROM AnswerLog WHERE UserName='"+str(userid)+"';"
@@ -379,12 +398,11 @@ def questions():
 
         print(list(myresult2))
         answered = [item[0] for item in myresult2]
-        print(answered)
-        print(29 in answered)
 
         if len(myresult)==0:
             response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"ContestID "+ str(request.form.get('ContestID')) +" Not Exist." }),status=200,mimetype='application/json')
             return response
+
         for qu in myresult:
             try:
                 mydb2 = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
