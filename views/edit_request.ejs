@@ -38,6 +38,8 @@
                  </div>
                  <div class="card-body">
                    <form action="/update_request" method="POST">
+                     <div class="row">
+
                        <div class="col-md-6">
                          <div class="form-group">
                            <label class="bmd-label-floating">Account Name</label>
@@ -55,25 +57,29 @@
                        </div>
                      </div>
 
-                     <div class="row">
-                       <div class="col-md-6">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">Amount</label>
+                       <div class="row">
+                         <div class="col-md-6">
+                           <div class="form-group">
+                             <label class="bmd-label-floating">Amount</label>
 
-                           <input name="amount" type="text" class="form-control" value="<%= MoneyRequest.Amount %>">
+                             <input name="amount" type="text" class="form-control" value="<%= MoneyRequest.Amount %>">
+                           </div>
                          </div>
-                       </div>
 
-                       <div class="col-md-6">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">UserName</label>
+                         <div class="col-md-6">
+                           <div class="form-group">
+                             <label class="bmd-label-floating">UserName</label>
 
-                           <input name="uname" type="text" class="form-control" value="<%= MoneyRequest.UserName %>" readonly>
+                             <input name="uname" type="text" class="form-control" value="<%= MoneyRequest.UserName %>" readonly>
+                           </div>
                          </div>
-                       </div>
 
+
+                       </div>
 
                      </div>
+
+
 
 
 

@@ -569,8 +569,8 @@ app.post('/update_request', function(req, res) {
     res.redirect("/login");
   }
   Updater.update_where("MoneyRequest",
-  ['AccountName',"BankAccount","Amount"],[req.body.name,req.body.bank,req.body.amount],"PackageID="+req.body.id, function(select_result) {
-    res.redirect("shop");
+  ['AccountName',"BankAccount","Amount"],[req.body.name,req.body.bank,req.body.amount],"MoneyRequestID="+req.body.id, function(select_result) {
+    res.redirect("requests");
   });
 })
 

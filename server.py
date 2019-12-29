@@ -10,7 +10,7 @@ import random
 from random import shuffle
 import jdatetime
 import requests
-
+import os
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 1600 * 1024 * 1024
 
@@ -75,6 +75,7 @@ def authenticate():
 
 @app.route('/api/get_user_info', methods=['GET'])
 def userinfo():
+    os.system("nodejs ranker.js")
     data = request.get_json()
 #    try:
 #        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
@@ -316,6 +317,13 @@ def answer():
             print("here!")
             trueone="1"
             falseone="0"
+
+        if result[0]=='Yes' and myresultQ[0][2]==1:
+            mycursorA = mydb.cursor()
+            sql = "UPDATE User Set Score=Score+"+str(myresultQ[0][0])+" , WeeklyScore=WeeklyScore+"+str(myresultQ[0][0])+" , TempScore=0 WHERE UserID="+str(myresultX[0][0])+";"
+            print(sql)
+            mycursorA.execute(sql)
+
         if result[0]=='Yes' and myresultQ[0][1]=='Yes':
             print("here!")
             trueone="1"
@@ -345,7 +353,10 @@ def answer():
         print("true/false:")
         print(trueone)
         print(falseone)
-        sql = "UPDATE User Set AllowedPackageCount= AllowedPackageCount - 1 , TotalTrueAnswers=TotalTrueAnswers+"+trueone+", TotalFalseAnswers=TotalFalseAnswers+"+falseone+" WHERE UserID="+str(myresultX[0][0])+";"
+        reduceval='0'
+        if myresultQ[0][2]==1:
+            reduceval='1'
+        sql = "UPDATE User Set AllowedPackageCount= AllowedPackageCount - "+reduceval+" , TotalTrueAnswers=TotalTrueAnswers+"+trueone+", TotalFalseAnswers=TotalFalseAnswers+"+falseone+" WHERE UserID="+str(myresultX[0][0])+";"
         print(sql)
         mycursorY.execute(sql)
         mydb.commit()
@@ -370,11 +381,12 @@ def questions():
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        mycursor.execute("SELECT U.Rank,U.UserID,U.AllowedPackageCount FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
+        mycursor.execute("SELECT U.Rank,U.UserID,U.AllowedPackageCount,U.DonePro FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
         myresult = mycursor.fetchall()
         print(myresult[0][0])
         userid=myresult[0][1]
         qnum=myresult[0][2]
+        donepro=myresult[0][3]
         if(int(myresult[0][0])>3 and int(request.form.get('ContestID'))==2):
             response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"only for 1-3 ranks."}),status=200,mimetype='application/json')
             return response
@@ -384,7 +396,7 @@ def questions():
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        sqlstr="SELECT * FROM Question  WHERE ContestID="+str(request.form.get('ContestID'))+" ORDER BY OrderNum LIMIT "+str(qnum)+";"
+        sqlstr="SELECT * FROM Question  WHERE ContestID="+str(request.form.get('ContestID'))+" ORDER BY OrderNum ;"
         if request.form.get('ContestID')=='1' :
             sqlstr="SELECT * FROM Question WHERE ContestID="+str(request.form.get('ContestID'))+" ORDER BY RAND() LIMIT "+str(qnum)+";"
         print(sqlstr)
@@ -398,6 +410,20 @@ def questions():
 
         print(list(myresult2))
         answered = [item[0] for item in myresult2]
+
+        if request.form.get('ContestID')=='2':
+            mycursorF = mydb.cursor()
+            sql = "UPDATE User SET DonePro='Yes' WHERE UserID="+str(userid)+";"
+            print(sql)
+            mycursorF.execute(sql)
+            myresultF = mycursorF.fetchall()
+            print(myresultF)
+            mydb.commit()
+
+        print(myresult[0][3])
+        if request.form.get('ContestID')=='2' and  donepro=='Yes':
+            response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"قبلا در مسابقه برترین ها شرکت کرده اید." }),status=200,mimetype='application/json')
+            return response
 
         if len(myresult)==0:
             response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"ContestID "+ str(request.form.get('ContestID')) +" Not Exist." }),status=200,mimetype='application/json')
@@ -458,11 +484,19 @@ def register_new_user():
         rcode=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
+
+        mycursorO = mydb.cursor()
+        mycursorO.execute("SELECT Value FROM OptionParameter WHERE Tag='question_num';")
+        myresultO = mycursorO.fetchall()
+        print("Param:")
+        print(myresultO[0][0])
+
         sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance,TotalTrueAnswers,TotalFalseAnswers,TotalPaid,TempScore,DoneLottery) VALUES (%s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        val = (request.form.get('UserName'), "0","0",request.form.get('Password'),request.form.get('DisplayName'),"3",request.form.get('PhoneNumber'),"1","1",rcode,"0","0","0","0","0","No")
+        val = (request.form.get('UserName'), "0","0",request.form.get('Password'),request.form.get('DisplayName'),myresultO[0][0],request.form.get('PhoneNumber'),"1","1",rcode,"0","0","0","0","0","No")
         mycursor.execute(sql, val)
         mydb.commit()
 
+        os.system("nodejs ranker.js")
 
         mycursorO = mydb.cursor()
         mycursorO.execute("SELECT Value FROM OptionParameter WHERE Tag='referral_prize';")
@@ -476,8 +510,8 @@ def register_new_user():
         print("Param:")
         print(myresultR[0][0])
 
-        sql = "UPDATE User Set AllowedPackageCount= AllowedPackageCount + %s WHERE UserID=%s;"
-        val = (myresultO[0][0],str(myresultR[0][0]))
+        sql = "UPDATE User Set AllowedPackageCount= AllowedPackageCount + %s WHERE UserID=%s OR UserName=%s;"
+        val = (myresultO[0][0],str(myresultR[0][0]),request.form.get('UserName'))
         mycursor.execute(sql, val)
         mydb.commit()
 
@@ -491,9 +525,21 @@ def register_new_user():
 def guest_session():
     token=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(17))
     usrnme='guest_'+''.join(random.choice(string.digits) for _ in range(8))
+    rcode='guest_'+''.join(random.choice(string.digits) for _ in range(5))
     try:
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
+
+        mycursorR = mydb.cursor()
+        mycursorR.execute("SELECT UserName FROM User WHERE DeviceID='"+request.form.get('DeviceID')+"';")
+        myresultR = mycursorR.fetchall()
+        print("alredy:")
+        #print(myresultR[0][0])
+        print(len(myresultR))
+
+        if len(myresultR)>0:
+            usrnme=myresultR[0][0]
+
         sql = "INSERT INTO Session (Token, UserID,Estate) VALUES (%s, %s, %s)"
         val = (token,usrnme,"Active")
         mycursor.execute(sql, val)
@@ -505,9 +551,49 @@ def guest_session():
         rcode=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
-        sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance,TotalTrueAnswers,TotalFalseAnswers,TotalPaid,TempScore,DoneLottery) VALUES (%s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        val = (usrnme, "0","0","","","3","","1","1","","0","0","0","0","0","No")
+
+        mycursorO = mydb.cursor()
+        mycursorO.execute("SELECT Value FROM OptionParameter WHERE Tag='question_num';")
+        myresultO = mycursorO.fetchall()
+        print("Param:")
+        print(myresultO[0][0])
+
+        sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance,TotalTrueAnswers,TotalFalseAnswers,TotalPaid,TempScore,DoneLottery,DeviceID) VALUES (%s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        val = (usrnme, "0","0","","",myresultO[0][0],"","1","1",rcode,"0","0","0","0","0","No",request.form.get('DeviceID'))
+        if not len(myresultR)>0:
+            mycursor.execute(sql, val)
+        mydb.commit()
+
+        os.system("nodejs ranker.js")
+
+        response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":{"sessionToken":token}}),status=200,mimetype='application/json')
+        return response
+    except Exception as e:
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
+        return response
+
+
+@app.route('/api/register_from_guest', methods=['POST'])
+def register_from_guest():
+    #data = request.get_json()
+    print(request.form)
+    token=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(18))
+
+
+    try:
+        rcode=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+        mycursor = mydb.cursor()
+
+        sql = "UPDATE User SET UserName=%s , PasswordHash=%s, PhoneNumber=%s , DisplayName=%s ,ReferralCode=%s WHERE DeviceID=%s ;";
+        val = (request.form.get('UserName'),request.form.get('Password'),request.form.get('PhoneNumber'),request.form.get('DisplayName'),rcode,request.form.get('DeviceID'))
         mycursor.execute(sql, val)
+        mydb.commit()
+
+        mycursorS = mydb.cursor()
+        sql = "INSERT INTO Session (Token, UserID,Estate) VALUES (%s, %s, %s)"
+        val = (token,request.form.get('UserName'),"Active")
+        mycursorS.execute(sql, val)
         mydb.commit()
 
         response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":{"sessionToken":token}}),status=200,mimetype='application/json')
@@ -716,19 +802,21 @@ def payment():
           "reseller": null
         }'''
 
+        rndrnd=''.join(random.choice(string.digits) for _ in range(7))
+
         mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
         mycursor = mydb.cursor()
         mycursor.execute("SELECT U.UserID FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
         myresult = mycursor.fetchall()
-        print(myresult[0][0])
+        print(myresult)
 
         mycursorP = mydb.cursor()
         mycursorP.execute("SELECT Title,Price From Package WHERE PackageID="+str(request.form.get('PID'))+";")
         myresultP = mycursorP.fetchall()
         print(myresultP[0][0])
         print(myresultP[0][1])
-
-        payload=reqstr.replace("#AMOUNT#",str(myresultP[0][1])).replace("#NAME#",str(myresultP[0][0])).replace("#ORDERID#",str(myresult[0][0]*10000+int(request.form.get('PID'))))
+        orderstr=str(myresult[0][0])+"000"+str(request.form.get('PID'))+"000"+rndrnd
+        payload=reqstr.replace("#AMOUNT#",str(myresultP[0][1])).replace("#NAME#",str(myresultP[0][0])).replace("#ORDERID#",orderstr)
         print(payload)
 
         headers = {
@@ -737,6 +825,13 @@ def payment():
         }
         r = requests.post("https://api.idpay.ir/v1.1/payment", data=payload, headers=headers)
         print(json.loads(r.text)['link'])
+
+        mycursorS = mydb.cursor()
+        sql = "INSERT INTO Invoice (PackageID, UserID,Estate,HashID,OrderID) VALUES (%s, %s, %s,%s,%s)"
+        val = (str(request.form.get('PID')),str(myresult[0][0]),"-",json.loads(r.text)['id'],orderstr)
+        mycursorS.execute(sql, val)
+        mydb.commit()
+
         response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":json.loads(r.text)['link']}),status=200,mimetype='application/json')
         return response
     except Exception as e:
