@@ -75,7 +75,7 @@ def authenticate():
 
 @app.route('/api/get_user_info', methods=['GET'])
 def userinfo():
-    os.system("nodejs ranker.js")
+    #os.system("nodejs ranker.js")
     data = request.get_json()
 #    try:
 #        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
@@ -346,7 +346,7 @@ def answer():
         print(sql)
         mycursorL.execute(sql)
 
-        if int(myresultX[0][1])<1:
+        if int(myresultX[0][1])<1 and myresultQ[0][2]==1:
             response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"Out of Allowed QUESTION"}),status=200,mimetype='application/json')
             return response
         mycursorY = mydb.cursor()
@@ -496,7 +496,7 @@ def register_new_user():
         mycursor.execute(sql, val)
         mydb.commit()
 
-        os.system("nodejs ranker.js")
+        #os.system("nodejs ranker.js")
 
         mycursorO = mydb.cursor()
         mycursorO.execute("SELECT Value FROM OptionParameter WHERE Tag='referral_prize';")
@@ -510,10 +510,11 @@ def register_new_user():
         print("Param:")
         print(myresultR[0][0])
 
-        sql = "UPDATE User Set AllowedPackageCount= AllowedPackageCount + %s WHERE UserID=%s OR UserName=%s;"
-        val = (myresultO[0][0],str(myresultR[0][0]),request.form.get('UserName'))
-        mycursor.execute(sql, val)
-        mydb.commit()
+        if request.form.get('ReferredBy')!="":
+            sql = "UPDATE User Set AllowedPackageCount= AllowedPackageCount + %s WHERE UserID=%s OR UserName=%s;"
+            val = (myresultO[0][0],str(myresultR[0][0]),request.form.get('UserName'))
+            mycursor.execute(sql, val)
+            mydb.commit()
 
         response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":{"sessionToken":token}}),status=200,mimetype='application/json')
         return response
@@ -564,7 +565,7 @@ def guest_session():
             mycursor.execute(sql, val)
         mydb.commit()
 
-        os.system("nodejs ranker.js")
+        #os.system("nodejs ranker.js")
 
         response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":{"sessionToken":token}}),status=200,mimetype='application/json')
         return response
