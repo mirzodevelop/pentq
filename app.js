@@ -81,6 +81,13 @@ app.get('/new_question', function(req, res) {
   res.render("new_question.ejs");
 })
 
+app.get('/change_pass', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  res.render("change_pass.ejs",{"message":"0"});
+})
+
 app.get('/new_video', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
@@ -142,6 +149,33 @@ app.post('/commit_question', function(req, res) {
       });
     });
 })
+
+app.post('/commit_change_pass', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+
+  if(req.body.new1 !== req.body.new2)
+  {
+    res.render("change_pass.ejs",{"message":"Pass and Repeat Does Not Match."});
+  }
+
+  Selector.select_all_where('Admin', "UserName='" + req.session.user.UserName + "' AND PassHash='" + md5(req.body.current) + "'", function(select_result) {
+    if (select_result.length == 1) {
+
+      Updater.update_where("Admin",
+      ['PassHash'],[md5(req.body.new1)],"UserName='"+req.session.user.UserName+"'", function(select_result) {
+        res.redirect("/");
+      });
+
+
+    } else {
+      res.render("change_pass.ejs",{"message":"Wrong Current Password !!"});
+    }
+  });
+
+})
+
 
 app.post('/commit_lottery', function(req, res) {
   if (typeof req.session.user == 'undefined') {
@@ -291,6 +325,15 @@ app.get('/questions', function(req, res) {
   });
 })
 
+app.get('/logout', function(req, res) {
+  req.session.destroy(function(err){
+     if(err){
+        console.log(err);
+     }else{
+         res.redirect('/');
+     }
+  });
+});
 
 app.get('/banners', function(req, res) {
   if (typeof req.session.user == 'undefined') {

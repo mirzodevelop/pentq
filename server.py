@@ -798,7 +798,7 @@ def payment():
           "name": "#NAME#",
           "phone": "09382198592",
           "mail": "",
-          "desc": "",
+          "desc": "برنده ها",
           "callback": "http://barande.clashofwin.com",
           "reseller": null
         }'''

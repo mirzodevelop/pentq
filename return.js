@@ -81,12 +81,47 @@ app.post('/', function(req, res) {
 
         Updater.update_where("User",
         ['AllowedPackageCount'],[user_[0].AllowedPackageCount+package_[0].Quantity],"UserID="+user_[0].UserID, function(select_result) {
-          res.render("payres.ejs");
+
+          Selector.select_all_where("Invoice", "OrderID='"+req.body.order_id+"'" , function(select_result) {
+            var id_to_confirm=select_result[0].HashID;
+            console.log("HashID:");
+            console.log(id_to_confirm);
+            var options = {
+              method: 'POST',
+              url: 'https://api.idpay.ir/v1.1/payment/verify',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-API-KEY': '55812935-e7a6-49c6-b72c-a4422cb72a03',
+                'X-SANDBOX': 0,
+              },
+              body: {
+                'order_id': req.body.order_id,
+                'id': id_to_confirm,
+              },
+              json: true,
+            };
+
+            console.log(options);
+
+
+            request(options, function (error, response, body) {
+              if (error) throw new Error(error);
+
+              console.log(body);
+
+              res.render("payres.ejs");
+
+            });
+         });
+
+
+        //res.render("payres.ejs");
 
         });
 
       });
     });
+
     // Selector.select_all_where("Invoice", "OrderID='"+req.body.order_id+"'" , function(select_result) {
     //   var id_to_confirm=select_result[0].HashID;
     //   console.log("HashID:");
