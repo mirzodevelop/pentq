@@ -2,11 +2,11 @@
 <html lang="en">
 
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta charset="utf-8" />
   <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-icon.png">
   <link rel="icon" type="image/png" href="/img/favicon.png">
   <title>
-     QuizGame
+     QuizGame: Options
   </title>
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
   <!--     Fonts and icons     -->
@@ -21,137 +21,61 @@
 <body class="">
   <div class="wrapper ">
     <div class="sidebar" data-color="purple" data-background-color="white" data-image="/img/sidebar-1.jpg">
-      <!--
-        Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
-
-        Tip 2: you can also add an image using data-image tag
-    -->
       <div class="logo">
         <a  class="simple-text logo-normal">
           QuizGame
         </a>
       </div>
       <%- include("sidebar.ejs") %>
-
     </div>
     <div class="main-panel">
 
-      <div class="content">
-        <div class="container-fluid">
-          <div class="card">
-            <div class="card-header card-header-primary">
-              <h3 class="card-title">Admin Dashboard</h3>
+             <div class="col-md-12">
+               <div class="card">
+                 <div class="card-header card-header-primary">
+                   <h4 class="card-title">New Quiz Options</h4>
+                   <p class="card-category"></p>
+                 </div>
+                 <div class="card-body">
+                   <form action="/commit_option" method="POST">
+                     <div class="row">
+                       <div class="col-md-6">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Title</label>
 
-            </div>
+                           <input name="title" type="text" class="form-control" >
+                         </div>
+                       </div>
 
-            <div class="col-md-12">
-              <div class="places-buttons">
-                <div class="row">
-                  <div class="col-md-6 ml-auto mr-auto text-center">
+                       <div class="col-md-6">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Value</label>
+                           <input name="value" type="text" class="form-control">
+                         </div>
+                       </div>
+                     </div>
 
-                  </div>
+                     <div class="row">
+                       <div class="col-md-4">
+                         <div class="form-group">
+                           <label class="bmd-label-floating">Tag</label>
+                           <input name="tag" type="text" class="form-control"  >
 
-				  <br> <br>
-                </div>
-                <div class="row">
-                  <div class="col-lg-8 col-md-10 ml-auto mr-auto">
-                    <div class="row">
-                      <div class="col-md-4">
-                        <a href="questions">
-                          <button class="btn btn-primary btn-block" >Questions</button>
-                        </a>
-                      </div>
-                      <div class="col-md-4">
-                        <a href="new_question">
-                          <button class="btn btn-primary btn-block" >New Question</button>
-                        </a>
-                      </div>
-                      <div class="col-md-4">
-                        <a href="new_lottery">
-                          <button class="btn btn-primary btn-block" >New Lottery Item</button>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                         </div>
+                       </div>
 
-                <div class="row">
-                  <div class="col-lg-8 col-md-10 ml-auto mr-auto">
-                    <div class="row">
-                      <div class="col-md-4">
-                        <a href="new_package">
-                          <button class="btn btn-primary btn-block" >New Package</button>
-                        </a>
-                      </div>
-
-                      <div class="col-md-4">
-                        <a href="new_video">
-                          <button class="btn btn-primary btn-block" >New Video</button>
-                        </a>
-                      </div>
-
-                      <div class="col-md-4">
-                      <a href="new_excel">
-                        <button class="btn btn-primary btn-block" >Import Excel</button>
-                      </a>
-                    </div>
-                    </div>
-
-                    </div>
-                  </div>
-
-                  <div class="row">
-                    <div class="col-lg-8 col-md-10 ml-auto mr-auto">
-                      <div class="row">
-                        <div class="col-md-4">
-                          <a href="new_banner">
-                            <button class="btn btn-primary btn-block" >New Banner</button>
-                          </a>
-                        </div>
-                        <div class="col-md-4" >
-                          <a href="new_option">
-                            <button class="btn btn-primary btn-block" >New Option</button>
-                          </a>
-                        </div>
-                        <div class="col-md-4" hidden>
-                          <a href="new_lottery">
-                            <button class="btn btn-primary btn-block" >New Lottery Item</button>
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
+                       </div>
 
 
+                     <button type="submit" class="btn btn-primary pull-right">Add Option</button>
+                     <div class="clearfix"></div>
+                   </form>
+                 </div>
+               </div>
+             </div>
 
-    <div class="fixed-plugin">
-        <div class="dropdown show-dropdown open">
-          <a href="#" data-toggle="dropdown">
-            <i class="fa fa-cog fa-2x"> </i>
-          </a>
-          <ul class="dropdown-menu">
-            <li class="header-title">Admin Settings</li>
-            <li class="button-container">
-              <a href="/change_pass"  class="btn btn-primary btn-block">Change Password</a>
-            </li>
+</div>
 
-            <li class="button-container">
-              <a href="/logout"  class="btn btn-default btn-block">logout</a>
-            </li>
-
-          </ul>
-        </div>
-      </div>
 
   </div>
 

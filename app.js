@@ -188,6 +188,18 @@ app.post('/commit_lottery', function(req, res) {
     });
 })
 
+app.post('/commit_option', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  Insertor.insert_one('OptionParameter', ['Title','Tag','Value'],
+    [req.body.title,req.body.tag,req.body.value],
+    function(insert_result) {
+      res.redirect("options");
+    });
+})
+
+
 app.post('/commit_video', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
@@ -354,6 +366,14 @@ app.get('/new_excel', function(req, res) {
   }
   res.render("new_excel.ejs");
 })
+
+app.get('/new_option', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  res.render("new_option.ejs");
+})
+
 
 app.get('/new_banner', function(req, res) {
   if (typeof req.session.user == 'undefined') {
@@ -634,13 +654,13 @@ app.post('/update_question', function(req, res) {
   Updater.update_where("Question",
   ['QuestionStatement'],[req.body.statement],"QuestionID="+req.body.id, function(select_result) {
     Updater.update_where("Choice",
-    ['Title'],[req.body.c1],"ChoiceID="+req.body.qid1, function(select_result) {
+    ['Title','IsTrue'],[req.body.c1, (req.body.answer == "1") ? "Yes" : "No" ],"ChoiceID="+req.body.qid1, function(select_result) {
       Updater.update_where("Choice",
-      ['Title'],[req.body.c2],"ChoiceID="+req.body.qid2, function(select_result) {
+      ['Title','IsTrue'],[req.body.c2, (req.body.answer == "2") ? "Yes" : "No"],"ChoiceID="+req.body.qid2, function(select_result) {
         Updater.update_where("Choice",
-        ['Title'],[req.body.c3],"ChoiceID="+req.body.qid3, function(select_result) {
+        ['Title','IsTrue'],[req.body.c3, (req.body.answer == "3") ? "Yes" : "No"],"ChoiceID="+req.body.qid3, function(select_result) {
           Updater.update_where("Choice",
-          ['Title'],[req.body.c4],"ChoiceID="+req.body.qid4, function(select_result) {
+          ['Title','IsTrue'],[req.body.c4, (req.body.answer == "4") ? "Yes" : "No"],"ChoiceID="+req.body.qid4, function(select_result) {
             res.redirect("questions");
           });
         });

@@ -82,15 +82,15 @@
                        </div>
                      </div>
 
-                     <div class="row" hidden>
+                     <div class="row" >
                        <div class="col-md-4">
                          <div class="form-group">
                            <label class="bmd-label-floating">Answer</label>
                            <select name="answer" class="form-control">
-                             <option value="1">1</option>
-                             <option value="2">2</option>
-                             <option value="3">3</option>
-                             <option value="4">4</option>
+                             <option value="1" <%= (Choices[0].IsTrue==='Yes') ? 'selected' : '' %> >1</option>
+                             <option value="2" <%= (Choices[1].IsTrue==='Yes') ? 'selected' : '' %> >2</option>
+                             <option value="3" <%= (Choices[2].IsTrue==='Yes') ? 'selected' : '' %> >3</option>
+                             <option value="4" <%= (Choices[3].IsTrue==='Yes') ? 'selected' : '' %> >4</option>
                            </select>
                          </div>
                        </div>
