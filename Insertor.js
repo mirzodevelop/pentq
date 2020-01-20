@@ -1,5 +1,6 @@
 var mysql = require('mysql');
 var sysql = require('sync-mysql');
+const delay = require('delay');
 
 var connection = mysql.createConnection({
   host: 'localhost',
@@ -8,7 +9,7 @@ var connection = mysql.createConnection({
   database: 'quiz',
   charset : 'utf8'
 });
-connection.connect();
+
 
 
 module.exports = {
@@ -28,9 +29,17 @@ module.exports = {
 
     var query='INSERT INTO '+table+'('+col+") VALUES ("+val+");";
     console.log(query);
+    connection.connect();
 
     connection.query(query , function(error, results, fields) {
+
+      connection.end();
+
       if (error) throw error;
+
+      //connection.end();
+      if (connection) connection.release()
+
       callback(results);
     });
 
@@ -62,6 +71,7 @@ module.exports = {
     });
 
     const result = connection.query(query);
+    //connection.end()
     return result
 
   },

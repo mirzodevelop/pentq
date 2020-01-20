@@ -14,6 +14,7 @@ var fileUpload=require('express-fileupload');
 const readXlsxFile = require('read-excel-file/node');
 var XLSX = require('xlsx');
 const delay = require('delay');
+var sleep = require('sleep');
 
 
 var Deleter = require("./Deleter.js");
@@ -251,6 +252,7 @@ app.post('/commit_excel', function(req, res) {
 
       for(var i=0;i<xlData.length;i++)
       {
+        //sleep.sleep(1);
         if(xlData.length-1 ==i){
         res.redirect("questions");
         }
@@ -703,6 +705,14 @@ app.post('/update_option', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");
   }
+
+  if(req.body.tag==='top_users_contest_end')
+  {
+    Updater.update_where("Hidden",
+    ["Value"],["No"],"Tag='done_pro'", function(select_result) {
+    });
+  }
+
   Updater.update_where("OptionParameter",
   ['Title',"Value","Tag"],[req.body.title,req.body.value,req.body.tag],"OptionParameterID="+req.body.id, function(select_result) {
     res.redirect("options");

@@ -96,17 +96,17 @@
                        </div>
 
                        <div class="col-md-4">
-                         <div class="form-group">
-                           <label class="bmd-label-floating">Saftey Level</label>
+                         <div class="form-group" hidden>
+                           <label class="bmd-label-floating" >Saftey Level</label>
                            <select name="saftey"  class="form-control">
-                             <option value="Yes">YES</option>
-                             <option value="No">NO</option>
+                             <option value="Yes" <%= (Choices[0].IsSaftyLevel==='Yes') ? 'selected' : '' %> >YES</option>
+                             <option value="No" <%= (Choices[0].IsSaftyLevel==='No') ? 'selected' : '' %> >NO</option>
                            </select>
                          </div>
                        </div>
 
                        <div class="col-md-4">
-                         <div class="form-group">
+                         <div class="form-group" hidden>
                            <label class="bmd-label-floating">ContestID</label>
                            <select name="contest" class="form-control">
                              <option value="1">1</option>

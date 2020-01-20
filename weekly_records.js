@@ -7,17 +7,20 @@ var Updater = require("./Updater.js");
 const JDate = require('jalali-date');
 const jdate = new JDate;
 
-Selector.select_all("User", function(select_result) {
-  for(var i=0; i<select_result.length;i++)
-  {
-    console.log(select_result[i]);
+var args = process.argv;
 
-    Insertor.insert_one('WeeklyRecord', ['Score','UserName','WeekEndData'],
-      [select_result[i].WeeklyScore,select_result[i].UserName,jdate.format('YYYY-MM-DD')],
-      function(insert_result) {
-        return "done!";
-      });
 
-  }
+    Selector.select_all("Hidden", function(select_result) {
+      console.log(select_result[0].Value);
+      if(select_result[0].Value==='Yes')
+      {
+        console.log("No Update Needed!");
+      }
+      else {
 
-});
+        Selector.select_all_where("Hidden","Tag='top_users_contest_end'", function(end_time) {
+          console.log(end_time[0].Value);
+        });
+
+      }
+    });

@@ -1,7 +1,7 @@
 var mysql = require('mysql');
 var sysql = require('sync-mysql');
 
-var query="UPDATE User SET DoneLottery='No' WHERE 1=1;";
+var query="UPDATE User SET DoneLottery='No', DoneRollCall='No' WHERE 1=1;";
 console.log(query);
 
 var connection = new sysql({

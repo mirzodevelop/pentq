@@ -9,6 +9,8 @@ import string
 import random
 from random import shuffle
 import jdatetime
+import datetime
+import time
 import requests
 import os
 app = Flask(__name__)
@@ -179,6 +181,50 @@ def lottery():
         response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
         return response
 
+
+
+@app.route('/api/rollcall', methods=['GET'])
+def rollcall():
+    data = request.get_json()
+    try:
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+
+        mycursorP = mydb.cursor()
+        mycursorP.execute("SELECT U.DoneRollCall,U.UserName FROM User AS U JOIN Session AS S ON S.UserID=U.UserName WHERE S.Token='"+request.headers['SessionID']+"';")
+        myresultP = mycursorP.fetchall()
+        print(myresultP[0][0])
+
+        mycursorO = mydb.cursor()
+        mycursorO.execute("SELECT Value FROM OptionParameter WHERE Tag='question_num';")
+        myresultO = mycursorO.fetchall()
+        print("Param:")
+        print(myresultO[0][0])
+
+        if(myresultP[0][0]!='Yes'):
+            mycursorZ = mydb.cursor()
+            sql = "UPDATE User Set DoneRollCall='Yes' WHERE UserName='"+str(myresultP[0][1])+"';"
+            print(sql)
+            mycursorZ.execute(sql)
+            mydb.commit()
+            print("type:")
+
+            mycursorD = mydb.cursor()
+            sql = "UPDATE User Set AllowedPackageCount=AllowedPackageCount+ "+str(myresultO[0][0])+" WHERE UserName='"+str(myresultP[0][1])+"';"
+            print(sql)
+            mycursorD.execute(sql)
+            mydb.commit()
+
+            response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":"OK"}),status=200,mimetype='application/json')
+            return response
+        else:
+            response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"امتیاز امروز قبلا داده شده."}),status=200,mimetype='application/json')
+            return response
+    except Exception as e:
+        print(str(e))
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
+        return response
+
+
 @app.route('/api/money_request', methods=['POST'])
 def money_request():
     data = request.get_json()
@@ -332,7 +378,8 @@ def answer():
             sql = "UPDATE User Set TempScore= "+str(myresultQ[0][0])+" WHERE UserID="+str(myresultX[0][0])+";"
             print(sql)
             mycursorZ.execute(sql)
-        else:
+
+        if result[0]!='Yes':
             mycursorA = mydb.cursor()
             if myresultQ[0][2]==1:
                 sql = "UPDATE User Set Score=Score+TempScore , WeeklyScore=WeeklyScore+TempScore , TempScore=0 WHERE UserID="+str(myresultX[0][0])+";"
@@ -390,6 +437,32 @@ def questions():
         if(int(myresult[0][0])>3 and int(request.form.get('ContestID'))==2):
             response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"only for 1-3 ranks."}),status=200,mimetype='application/json')
             return response
+
+        mycursorO = mydb.cursor()
+        mycursorO.execute("SELECT Value FROM OptionParameter WHERE Tag='top_users_contest_time';")
+        myresultO = mycursorO.fetchall()
+        date_start=myresultO[0][0]
+
+        mycursorE = mydb.cursor()
+        mycursorE.execute("SELECT Value FROM OptionParameter WHERE Tag='top_users_contest_end';")
+        myresultE = mycursorE.fetchall()
+        date_end=myresultE[0][0]
+
+        date_beg_obj=jdatetime.datetime.strptime(date_start, '%Y/%m/%d-%H:%M')
+        date_end_obj=jdatetime.datetime.strptime(date_end, '%Y/%m/%d-%H:%M')
+
+        date_now_obj=jdatetime.datetime.now()
+
+        date_beg_int=time.mktime(date_beg_obj.timetuple())
+        date_end_int=time.mktime(date_end_obj.timetuple())
+        date_now_int=time.mktime(date_now_obj.timetuple())
+
+        if  ( date_now_int > date_end_int  or date_now_int < date_beg_int)  and int(request.form.get('ContestID'))==2 :
+            response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"درخواست خارج از محدوده ی زمانی تعریف شده است."}),status=200,mimetype='application/json')
+            return response
+
+
+
     except Exception as e:
         response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"Expired."}),status=200,mimetype='application/json')
         return response
@@ -491,8 +564,8 @@ def register_new_user():
         print("Param:")
         print(myresultO[0][0])
 
-        sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance,TotalTrueAnswers,TotalFalseAnswers,TotalPaid,TempScore,DoneLottery) VALUES (%s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        val = (request.form.get('UserName'), "0","0",request.form.get('Password'),request.form.get('DisplayName'),myresultO[0][0],request.form.get('PhoneNumber'),"1","1",rcode,"0","0","0","0","0","No")
+        sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance,TotalTrueAnswers,TotalFalseAnswers,TotalPaid,TempScore,DoneLottery,DoneRollCall) VALUES (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        val = (request.form.get('UserName'), "0","0",request.form.get('Password'),request.form.get('DisplayName'),myresultO[0][0],request.form.get('PhoneNumber'),"1","1",rcode,"0","0","0","0","0","No","No")
         mycursor.execute(sql, val)
         mydb.commit()
 
@@ -507,10 +580,11 @@ def register_new_user():
         mycursorR = mydb.cursor()
         mycursorR.execute("SELECT UserID FROM User WHERE ReferralCode='"+request.form.get('ReferredBy')+"';")
         myresultR = mycursorR.fetchall()
-        print("Param:")
-        print(myresultR[0][0])
+        print("Refferall result:")
+        print(myresultR)
+        print(len(myresultR))
 
-        if request.form.get('ReferredBy')!="":
+        if request.form.get('ReferredBy')!="" and len(myresultR)>0:
             sql = "UPDATE User Set AllowedPackageCount= AllowedPackageCount + %s WHERE UserID=%s OR UserName=%s;"
             val = (myresultO[0][0],str(myresultR[0][0]),request.form.get('UserName'))
             mycursor.execute(sql, val)
@@ -559,8 +633,8 @@ def guest_session():
         print("Param:")
         print(myresultO[0][0])
 
-        sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance,TotalTrueAnswers,TotalFalseAnswers,TotalPaid,TempScore,DoneLottery,DeviceID) VALUES (%s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        val = (usrnme, "0","0","","",myresultO[0][0],"","1","1",rcode,"0","0","0","0","0","No",request.form.get('DeviceID'))
+        sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance,TotalTrueAnswers,TotalFalseAnswers,TotalPaid,TempScore,DoneLottery,DoneRollCall,DeviceID) VALUES (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        val = (usrnme, "0","0","","",myresultO[0][0],"","1","1",rcode,"0","0","0","0","0","No","No",request.form.get('DeviceID'))
         if not len(myresultR)>0:
             mycursor.execute(sql, val)
         mydb.commit()
@@ -788,6 +862,47 @@ def leaderboard():
         return response
 
     return ret
+
+@app.route('/api/get_time')
+def get_time():
+    ret=""""""
+    try:
+        #locale.setlocale(locale.LC_ALL, "fa_IR")
+        #jdatetime.set_locale('fa_IR')
+        now=datetime.datetime.utcnow()
+
+        utc_dt = datetime.datetime.now()
+
+        #strtime="1398/10/16-02:24"
+
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz")
+
+        mycursorO = mydb.cursor()
+        mycursorO.execute("SELECT Value FROM OptionParameter WHERE Tag='top_users_contest_time';")
+        myresultO = mycursorO.fetchall()
+        print("Param:")
+
+        mycursorE = mydb.cursor()
+        mycursorE.execute("SELECT Value FROM OptionParameter WHERE Tag='top_users_contest_end';")
+        myresultE = mycursorE.fetchall()
+        print("Param:")
+        print(myresultE[0][0])
+
+        fromstr=jdatetime.datetime.strptime(myresultO[0][0], '%Y/%m/%d-%H:%M')
+        endstr=jdatetime.datetime.strptime(myresultE[0][0], '%Y/%m/%d-%H:%M')
+
+        print(time.mktime(fromstr.timetuple()))
+        print(time.mktime(endstr.timetuple()))
+        print(time.mktime(shamsi_now.timetuple()))
+
+        response = app.response_class(response=json.dumps({"StartTime":str(fromstr),"NowTime":str(shamsi_now),"EndTime":str(endstr)}),status=200,mimetype='application/json')
+        return response
+    except Exception as e:
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
+        return response
+
+    return ret
+
 
 @app.route('/api/payment',methods=['POST'])
 def payment():
