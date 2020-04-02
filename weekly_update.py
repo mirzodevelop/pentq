@@ -55,7 +55,7 @@ while 1==1:
 
             for usr in myresult:
                 mycursorA = mydb.cursor()
-                sql = "INSERT INTO WeeklyRecord(Score,UserName,WeekEndData) VALUES ('"+str(usr[2])+"','"+usr[5]+"','"+jdatetime.datetime.now().strftime("%y-%m-%d")+"');"
+                sql = "INSERT INTO WeeklyRecord(Score,UserName,WeekEndData,WeeklyRank) VALUES ('"+str(usr[2])+"','"+usr[5]+"','"+jdatetime.datetime.now().strftime("%y-%m-%d")+"',"+str(usr[8])+");"
                 print(sql)
                 mycursorA.execute(sql)
                 if usr[8] < int(to_prize):

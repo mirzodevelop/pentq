@@ -33,12 +33,7 @@ module.exports = {
 
     connection.query(query , function(error, results, fields) {
 
-      connection.end();
-
       if (error) throw error;
-
-      //connection.end();
-      if (connection) connection.release()
 
       callback(results);
     });

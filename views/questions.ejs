@@ -47,6 +47,12 @@
                   <div class="table-responsive">
                     <table class="table">
                       <thead class=" text-primary">
+
+                        <form action="mul_delete" method="POST">
+
+                        <th>
+                          <input type="submit" value="Delete Marked">
+                        </th>
                         <th>
                           ID
                         </th>
@@ -58,9 +64,11 @@
                         </th>
                       </thead>
                       <tbody>
-
                         <% for (var i =0; i <Questions.length;  i++ ) { %>
                           <tr>
+                            <td>
+                              <input type="checkbox" name="marked" value="<%= Questions[i].QuestionID %>">
+                            </td>
                             <td>
                               <%= Questions[i].QuestionID %>
                             </td>
@@ -80,7 +88,7 @@
                           </tr>
 
                         <% } %>
-
+                      </form>
 
                       </tbody>
                     </table>

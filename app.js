@@ -189,6 +189,20 @@ app.post('/commit_lottery', function(req, res) {
     });
 })
 
+
+app.post('/mul_delete', function(req, res) {
+  if (typeof req.session.user == 'undefined') {
+    res.redirect("/login");
+  }
+  console.log(req.body.marked);
+  console.log("+++++++++++++++++++++++++++++++++++++"+req.body.marked);
+
+  Deleter.delete_where('Question', "QuestionID IN ("+req.body.marked+")", function(insert_result) {
+    res.redirect("questions");
+  });
+
+})
+
 app.post('/commit_option', function(req, res) {
   if (typeof req.session.user == 'undefined') {
     res.redirect("/login");

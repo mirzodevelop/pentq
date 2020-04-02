@@ -21,7 +21,5 @@ module.exports = {
     });
   },
 
-  ToPersianDigits: function() {
-    return "Hola";
-  }
+
 };

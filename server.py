@@ -544,7 +544,7 @@ def register_new_user():
     token=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(17))
 
     try:
-        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz",charset='utf8')
         mycursor = mydb.cursor()
         sql = "INSERT INTO Session (Token, UserID,Estate) VALUES (%s, %s, %s)"
         val = (token,request.form.get('UserName'),"Active")
@@ -555,7 +555,7 @@ def register_new_user():
         return response
     try:
         rcode=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
-        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz",charset='utf8', init_command='SET NAMES UTF8')
         mycursor = mydb.cursor()
 
         mycursorO = mydb.cursor()
@@ -565,7 +565,7 @@ def register_new_user():
         print(myresultO[0][0])
 
         sql = "INSERT INTO User (UserName, Score,WeeklyScore,PasswordHash,DisplayName,AllowedPackageCount,PhoneNumber,Rank,WeeklyRank,ReferralCode,Balance,TotalTrueAnswers,TotalFalseAnswers,TotalPaid,TempScore,DoneLottery,DoneRollCall) VALUES (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        val = (request.form.get('UserName'), "0","0",request.form.get('Password'),request.form.get('DisplayName'),myresultO[0][0],request.form.get('PhoneNumber'),"1","1",rcode,"0","0","0","0","0","No","No")
+        val = (request.form.get('UserName'), "0","0",request.form.get('Password'),request.form.get('DisplayName').encode('utf-8'),myresultO[0][0],request.form.get('PhoneNumber'),"1","1",rcode,"0","0","0","0","0","No","No")
         mycursor.execute(sql, val)
         mydb.commit()
 
@@ -953,6 +953,141 @@ def payment():
     except Exception as e:
         response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
         return response
+
+@app.route('/api/sendverify',methods=['POST'])
+def sendverify():
+    try:
+        reqstr0='''{
+  "UserApiKey": "7a4a069be6b13b4953b8069b",
+  "SecretKey": "ZxE!@12345"
+}'''
+
+        headers = {
+        'Content-Type': 'application/json'
+        }
+        r = requests.post("http://RestfulSms.com/api/Token", data=reqstr0, headers=headers)
+        token_val=json.loads(r.text)['TokenKey']
+        reqstr1='''{
+   "Code": "CODE",
+   "MobileNumber": "MOBILE"
+} '''
+
+        headers = {
+                'Content-Type': 'application/json',
+                'x-sms-ir-secure-token':token_val
+        }
+
+        numberList = [155,233,891,948,947,131,125,145,742,198,1990,733,398,445,531,625]
+
+        codeval=(int(request.form.get('mobile'))%1000+random.choice(numberList))%1000
+
+
+        r = requests.post("http://RestfulSms.com/api/VerificationCode", data=reqstr1.replace("CODE",random.choice(string.digits)+str(codeval)).replace("MOBILE",request.form.get('mobile')), headers=headers)
+        response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":"OK"}),status=200,mimetype='application/json')
+        return response
+    except Exception as e:
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"شماره نا معتبر"}),status=200,mimetype='application/json')
+        return response
+
+@app.route('/api/verify',methods=['POST'])
+def verify():
+    numberList = [155,233,891,948,947,131,125,145,742,198,1990,733,398,445,531,625]
+    result=False
+    for num in numberList:
+        codeval=(int(request.form.get('mobile'))%1000+num)%1000
+        if(codeval==int(request.form.get('code'))%1000):
+            result=True
+    response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":result}),status=200,mimetype='application/json')
+    return response
+
+@app.route('/api/sendverifypayment',methods=['POST'])
+def sendverifypayment():
+    try:
+        reqstr0='''{
+  "UserApiKey": "7a4a069be6b13b4953b8069b",
+  "SecretKey": "ZxE!@12345"
+}'''
+
+        headers = {
+        'Content-Type': 'application/json'
+        }
+        r = requests.post("http://RestfulSms.com/api/Token", data=reqstr0, headers=headers)
+        token_val=json.loads(r.text)['TokenKey']
+        reqstr1='''{
+ "ParameterArray":[
+{ "Parameter": "VerificationCode","ParameterValue": "CODE"}
+],
+"Mobile":"MOBILE",
+"TemplateId":"19552"
+} '''
+
+        headers = {
+                'Content-Type': 'application/json',
+                'x-sms-ir-secure-token':token_val
+        }
+
+        numberList = [155,233,391,348,447,531,625,741,742,893,1994,735,396,447,538,629]
+
+        codeval=(int(request.form.get('mobile'))%1000+random.choice(numberList))%1000
+
+
+        r = requests.post("http://RestfulSms.com/api/UltraFastSend", data=reqstr1.replace("CODE",random.choice(string.digits)+str(codeval)).replace("MOBILE",request.form.get('mobile')), headers=headers)
+        response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":"OK"}),status=200,mimetype='application/json')
+        return response
+    except Exception as e:
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":"شماره نا معتبر"}),status=200,mimetype='application/json')
+        return response
+
+@app.route('/api/verifypayment',methods=['POST'])
+def verifypayment():
+    numberList = [155,233,391,348,447,531,625,741,742,893,1994,735,396,447,538,629]
+    result=False
+    for num in numberList:
+        codeval=(int(request.form.get('mobile'))%1000+num)%1000
+        if(codeval==int(request.form.get('code'))%1000):
+            result=True
+    response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":result}),status=200,mimetype='application/json')
+    return response
+
+
+@app.route('/api/forceupdate', methods=['GET'])
+def forceupdate():
+    data = request.get_json()
+    try:
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+        mycursorO = mydb.cursor()
+        mycursorO.execute("SELECT Value FROM OptionParameter WHERE Tag='force_update';")
+        myresultO = mycursorO.fetchall()
+        print("Param:")
+        print(myresultO[0][0])
+
+        response = app.response_class(response=json.dumps({"result":"OK","array":None,"item":myresultO[0][0]}),status=200,mimetype='application/json')
+        return response
+    except Exception as e:
+        print(str(e))
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
+        return response
+
+@app.route('/api/topthree')
+def topthree():
+    ret=""""""
+    try:
+        mydb = MySQLdb.connect("localhost","root","2bacvvy","quiz" )
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT UserName,WeeklyScore,Score,Rank,WeeklyRank FROM User ORDER BY Score DESC LIMIT 3;SET @rank=0, @score=-100; UPDATE User SET Rank=IF(@Score=(@Score:=Score), @Rank, @Rank:=@Rank+1) ORDER BY Score DESC;")
+        myresult = mycursor.fetchall()
+
+        row_headers=[camelize(x[0]) for x in mycursor.description] #this will extract row headers
+        json_data=[]
+        for result in myresult:
+            json_data.append(dict(zip(row_headers,result)))
+        response = app.response_class(response=json.dumps({"result":"OK","array":json_data,"item":None}),status=200,mimetype='application/json')
+        return response
+    except Exception as e:
+        response = app.response_class(response=json.dumps({"result":"Error","array":None,"item":None,"errorMessage":str(e)}),status=200,mimetype='application/json')
+        return response
+
+    return ret
 
 if __name__ == '__main__':
     app.run(port=8000,host='0.0.0.0')
